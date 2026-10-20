@@ -164,7 +164,7 @@ const LaunchDetailPage = () => {
         </section>
       )}
 
-      {/* Live from Galaxy Ground — startup posts linked via related_launch_id */}
+      {/* Related startup posts are unavailable until the live schema exposes a supported relationship. */}
       {launch.relatedPosts && launch.relatedPosts.length > 0 && (
         <section className="glass-panel p-5">
           <div className="mb-4 flex items-center gap-2">
