@@ -1,0 +1,62 @@
+---
+description: Full-stack analysis and stabilization workflow for Galaxy Ground
+alwaysApply: false
+---
+
+# Galaxy Ground — Full-Stack Analysis Protocol
+
+Use this checklist when asked to analyze, debug, stabilize, or extend the project. **Analyze thoroughly before making changes.**
+
+## 1. Codebase Analysis
+
+- Map folders: `src/` (pages, components, hooks, lib, integrations), `supabase/` (migrations, functions), `public/`, configs.
+- Stack: React 18 + Vite (port **8080**) + TypeScript + Tailwind + shadcn/ui + TanStack Query + React Router 6.
+- Backend: **Supabase BaaS only** (no custom Node server). Auth, Postgres + RLS, Storage (`post-media`), Realtime, 2 Deno edge functions.
+- Routes: `src/App.tsx` — 16 routes under `AppLayout`, `/auth` and `*` outside layout.
+- Data flow: hooks → `supabase` client → tables; feed merges `posts`, `startup_posts`, `themed_posts`.
+- Auth: `useAuth` + `AuthPage` (email/password); session in localStorage.
+
+## 2. Connection & Configuration Verification
+
+- Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (see `.env.example`).
+- Edge function secrets (Supabase dashboard): `OPENAI_API_KEY` or `LOVABLE_API_KEY`, `FIRECRAWL_API_KEY`, etc.
+- Verify: client init, RLS policies, storage bucket, realtime channels, import paths (`@/` alias).
+- No separate frontend/backend ports — SPA talks directly to Supabase.
+
+## 3. Run the Project
+
+```bash
+npm install
+npm run dev    # http://localhost:8080
+npm run build
+npm run test
+```
+
+Fix build/runtime errors recursively; document root cause and fix.
+
+## 4. Bug Fixing & Stability
+
+Prioritize: runtime/console errors, API/RLS failures, schema/type drift, broken bookmarks/likes on aggregated posts, missing env handling, infinite re-renders, validation gaps.
+
+## 5. Code Quality
+
+- Match existing patterns; minimal diffs.
+- Remove dead code only when safe (`Index.tsx` unused, etc.).
+- Align `src/integrations/supabase/types.ts` with `supabase/migrations/`.
+
+## 6. Feature & Product Suggestions
+
+Deliver prioritized: **High** / **Medium** / **Future** — UX, security, performance, SEO, a11y, mobile, admin, monetization, analytics.
+
+## 7. Testing
+
+- Manual: auth, feed, post CRUD, likes/reactions, comments, bookmarks (user + startup + themed ids), profiles, follow, search, notifications, responsive layout.
+- Automated: `npm run test` (Vitest); Playwright scaffold in `e2e/` (empty).
+
+## 8. Output Requirements
+
+Maintain a log in `PROJECT_ANALYSIS.md`: issues found, fixes applied, files modified, suggestions. Explain major structural changes before applying.
+
+## 9. Future Development Readiness
+
+Key files: `src/hooks/usePosts.ts` (feed + `fetchPostById`), `useAuth.tsx`, `PostCard.tsx`, `supabase/migrations/`, edge functions `fetch-themed-posts` and `fetch-startup-updates`.

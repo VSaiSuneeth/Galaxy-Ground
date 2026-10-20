@@ -1,0 +1,7 @@
+# Galaxy Ground
+# https://galaxyground.app/
+
+User-agent: *
+Allow: /
+
+Sitemap: https://galaxyground.app/sitemap.xml

@@ -1,0 +1,26 @@
+project_id = "lmdswaagcdxulcczkqmu"
+
+[functions.fetch-startup-updates]
+verify_jwt = false
+
+[functions.fetch-themed-posts]
+verify_jwt = false
+
+[functions.sync-launches]
+verify_jwt = false
+# TODO: Add schedule = "0 */6 * * *" via `supabase functions deploy` or Dashboard
+# once the external API is wired up, so this runs every 6 hours.
+
+[functions.sync-topic-content]
+verify_jwt = false
+# TODO: Add schedule = "0 6 * * *" for a daily sync once the external API is wired up.
+
+[functions.send-weekly-digest]
+verify_jwt = false
+# TODO: Set cron schedule "0 3 * * 1" via Dashboard after email provider is configured.
+
+[functions.generate-api-key]
+verify_jwt = false
+
+[functions.api-gateway]
+verify_jwt = false

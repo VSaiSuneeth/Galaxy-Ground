@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galaxy Ground</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0a0a1a" />
+
+    <!-- SEO -->
+    <meta name="description" content="Space community hub — feed, startups, missions, and learning." />
+    <meta property="og:title" content="Galaxy Ground" />
+    <meta property="og:description" content="Space community hub — feed, startups, missions, and learning." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://galaxyground.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://galaxyground.app/" />
+
+    <!-- Security (relaxed during development; tighten for production) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self' data:;" />
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/src/main.tsx" as="script" />
+
+    <!-- Robots -->
+    <meta name="robots" content="index, follow" />
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
