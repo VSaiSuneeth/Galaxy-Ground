@@ -61,8 +61,9 @@ export default function ConnectModal({
       setCategory("");
       onClose();
       if (onSuccess) onSuccess();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send request.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to send request.";
+      toast.error(message);
     }
   };
 

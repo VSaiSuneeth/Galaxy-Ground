@@ -216,7 +216,18 @@ export function useSendConnectionRequest() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23505") {
+          throw new Error("You already sent this person a request.");
+        }
+        if (error.code === "42501" || /rate limit|5 requests/i.test(error.message)) {
+          throw new Error("You have sent 5 connection requests today. Try again tomorrow.");
+        }
+        if (/block/i.test(error.message)) {
+          throw new Error("You cannot send a connection request because one of you has blocked the other.");
+        }
+        throw error;
+      }
       return data;
     },
     onSuccess: () => {

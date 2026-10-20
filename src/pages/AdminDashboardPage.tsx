@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -22,15 +23,7 @@ const AdminDashboardPage = () => {
   const [activeTab, setActiveTab] = useState("content");
 
   // Admin role check
-  const { data: isAdmin, isLoading: checkingRole } = useQuery({
-    queryKey: ["admin-role", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
-      if (error) return false;
-      return Boolean(data);
-    },
-  });
+  const { data: isAdmin, isLoading: checkingRole } = useAdminRole(user?.id);
 
   if (loading || checkingRole) {
     return (
@@ -207,8 +200,8 @@ const EdgeFunctionHealthPanel = () => {
                   </p>
                   <p className="text-xs text-muted-foreground">Items processed: {job.items_processed || 0}</p>
                 </div>
-                <Badge variant={job.last_status === "success" ? "default" : "destructive"}>
-                  {job.last_status || "unknown"}
+                <Badge variant={job.status === "ok" ? "default" : "destructive"}>
+                  {job.status || "unknown"}
                 </Badge>
               </div>
             ))}
@@ -488,8 +481,8 @@ const BadgeAwardsPanel = () => {
     queryKey: ["badge-awards-admin"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("badge_awards")
-        .select("*, badges!inner(name, description), profiles!inner(username)")
+        .from("profile_badge_awards")
+        .select("id, awarded_at, badges!profile_badge_awards_badge_id_fkey(name, description), profiles!profile_badge_awards_user_id_fkey(username)")
         .order("awarded_at", { ascending: false })
         .limit(50);
       return data || [];

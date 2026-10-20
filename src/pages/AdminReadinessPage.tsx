@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { useSupabaseHealth } from "@/hooks/useSupabaseHealth";
 import { formatCount, getCountState, getReadinessSummary, type ReadinessCheck, type ReadinessState } from "@/lib/readiness";
 
@@ -15,21 +16,13 @@ const stateClasses: Record<ReadinessState, string> = {
 const AdminReadinessPage = () => {
   const { user, loading } = useAuth();
   const health = useSupabaseHealth();
-  const role = useQuery({
-    queryKey: ["admin-role", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("has_role", { _user_id: user!.id, _role: "admin" });
-      if (error) return false;
-      return Boolean(data);
-    },
-  });
+  const role = useAdminRole(user?.id);
   const rpcProbe = useQuery({
     queryKey: ["readiness", "get_feed_page"],
     enabled: !!user && role.data === true,
     retry: false,
     queryFn: async () => {
-      const { error } = await (supabase as any).rpc("get_feed_page", {
+      const { error } = await supabase.rpc("get_feed_page", {
         p_user_id: user!.id,
         p_page_offset: 0,
         p_page_size: 1,

@@ -19,13 +19,6 @@ function isMissingTableError(error: { code?: string; message?: string } | null) 
   return error.code === "42P01" || (error.message || "").toLowerCase().includes("does not exist");
 }
 
-function isMissingColumnError(error: { message?: string } | null): boolean {
-  if (!error) return false;
-  return (error.message || "").toLowerCase().includes("does not exist") ||
-         (error.message || "").toLowerCase().includes("column") ||
-         (error.message || "").toLowerCase().includes("related_launch_id");
-}
-
 function mapDbStatus(status: string): LaunchStatus {
   switch (status) {
     case "scheduled":
@@ -96,7 +89,7 @@ async function fetchLaunchDetailFromSupabase(slug: string): Promise<LaunchDetail
   }
   if (!launch) return null;
 
-  const [updatesRes, sourcesRes, relatedPostsRes] = await Promise.all([
+  const [updatesRes, sourcesRes] = await Promise.all([
     supabase
       .from("launch_updates")
       .select("title, summary, source_url, published_at, update_type")
@@ -108,21 +101,10 @@ async function fetchLaunchDetailFromSupabase(slug: string): Promise<LaunchDetail
       .select("source_name, source_type, url, trust_level")
       .eq("launch_id", launch.id)
       .order("trust_level", { ascending: false }),
-    supabase
-      .from("startup_posts")
-      .select("id, title, content, summary, source_url, image_url, hashtags, published_at, startups(slug, name, logo_url)")
-      .not("related_launch_id", "is", null)
-      .eq("related_launch_id", launch.id)
-      .order("published_at", { ascending: false })
-      .limit(10),
   ]);
 
   if (updatesRes.error && !isMissingTableError(updatesRes.error)) throw updatesRes.error;
   if (sourcesRes.error && !isMissingTableError(sourcesRes.error)) throw sourcesRes.error;
-  // related_launch_id column may not exist yet; silently degrade.
-  const relatedPosts = (!relatedPostsRes.error || isMissingColumnError(relatedPostsRes.error))
-    ? asArray<any>(relatedPostsRes.data)
-    : [];
 
   const base = mapDbRowToLaunch(launch);
   const primarySource = sourcesRes.data?.[0];
@@ -144,21 +126,7 @@ async function fetchLaunchDetailFromSupabase(slug: string): Promise<LaunchDetail
       url: s.url,
       trustLevel: s.trust_level,
     })),
-    // Posts that reference this launch via related_launch_id on startup_posts.
-    // The column is added by migration 20260702160000_master_blueprint_part2.
-    // TODO: Regenerate Supabase types after migration is applied so this
-    // query is fully typed. For now the result is cast via asArray.
-    relatedPosts: relatedPosts.map((p: any) => ({
-      id: p.id,
-      title: p.title || "",
-      content: p.content || "",
-      summary: p.summary || "",
-      sourceUrl: p.source_url,
-      imageUrl: p.image_url,
-      publishedAt: p.published_at,
-      startupName: p.startups?.name || null,
-      startupSlug: p.startups?.slug || null,
-    })),
+    relatedPosts: [],
     dataSource: "supabase",
   };
 }

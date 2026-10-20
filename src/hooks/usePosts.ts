@@ -93,7 +93,7 @@ const getFeedPage = async (filter: Filter = {}, page: number): Promise<FeedPost[
     }
 
     // Use the deployed RPC for the main feed
-    const { data: rpcData, error } = await supabase.rpc("get_feed_page" as any, {
+    const { data: rpcData, error } = await supabase.rpc("get_feed_page", {
       p_user_id: me || null,
       p_page_offset: page,
       p_page_size: pageSize,
