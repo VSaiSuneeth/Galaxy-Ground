@@ -1,4 +1,4 @@
-import { Briefcase, TrendingUp, Users, ArrowRight, Sparkles } from "lucide-react";
+import { Briefcase, ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useFollow } from "@/hooks/useFollow";
@@ -9,7 +9,9 @@ import { useFeaturedContent } from "@/hooks/useFeaturedContent";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { asArray } from "@/lib/safe-data";
+import { allowFallbackData } from "@/lib/fallback-data";
 import LaunchCountdownWidget from "@/components/LaunchCountdownWidget";
+import { Patch } from "@/components/brand/Patch";
 
 const fallbackTrending = [
   { tag: "isro", count: 0 },
@@ -25,10 +27,10 @@ const FollowChip = ({ startupId }: { startupId: string }) => {
     <button
       onClick={toggle}
       disabled={busy}
-      className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
+      className={`rounded-full px-2.5 py-1 text-xs transition-colors ${
         isFollowing
-          ? "border border-glass-border text-foreground hover:bg-muted/40"
-          : "bg-primary text-primary-foreground hover:bg-primary/90"
+          ? "border border-border text-foreground hover:bg-muted"
+          : "border border-primary text-primary hover:bg-accent"
       }`}
     >
       {isFollowing ? "Following" : "Follow"}
@@ -42,7 +44,8 @@ const RightSidebar = () => {
   const { data: stats } = useSidebarStats();
   const { data: whoToFollow = [], isLoading: whoLoading } = useWhoToFollow(3);
   const { data: featuredContent = [] } = useFeaturedContent();
-  const topics = asArray(trending).length > 0 ? asArray(trending) : fallbackTrending;
+  const hasTrending = asArray(trending).length > 0;
+  const topics = hasTrending ? asArray(trending) : allowFallbackData ? fallbackTrending : [];
   const popularCommunities = asArray(stats?.communities).slice(0, 4);
   const topStartups = asArray(stats?.topStartups);
   const [followedRoles, setFollowedRoles] = useState<any[]>([]);
@@ -80,21 +83,19 @@ const RightSidebar = () => {
   }, [user]);
 
   return (
-    <aside className="hidden xl:block w-80 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto scrollbar-thin py-4 pr-4 space-y-4">
-      <section className="glass-panel p-4">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
-          <TrendingUp className="h-4 w-4 text-primary" />
-          Trending Topics
-        </h3>
+    <aside className="hidden w-80 shrink-0 space-y-5 border-l border-border py-5 pl-6 pr-4 xl:sticky xl:top-0 xl:block xl:h-dvh xl:overflow-y-auto xl:scrollbar-none">
+      <section className="border-b border-border pb-4">
+        <h3 className="telemetry mb-3">Trending</h3>
+        {!hasTrending && allowFallbackData && <p className="mb-2 text-[13px] text-muted-foreground">Sample data</p>}
         <ul className="space-y-1">
           {topics.map((topic) => (
             <li key={topic.tag}>
               <Link
                 to={`/hashtag/${topic.tag}`}
-                className="flex justify-between items-center text-sm hover:bg-muted/40 rounded-lg px-2 py-1.5 transition-colors"
+                className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
               >
                 <span className="text-primary font-medium">#{topic.tag}</span>
-                <span className="text-muted-foreground text-xs tabular-nums">{topic.count}</span>
+                {topic.count > 0 ? <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{topic.count}</span> : <span className="telemetry text-primary">New</span>}
               </Link>
             </li>
           ))}
@@ -105,8 +106,8 @@ const RightSidebar = () => {
 
       {/* India in Space Spotlight */}
       {indiaInSpace && (
-        <section className="glass-panel p-4 border-primary/30 bg-primary/5">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+        <section className="border-b border-border pb-4">
+          <h3 className="telemetry mb-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary" />
             India in Space
           </h3>
@@ -114,7 +115,7 @@ const RightSidebar = () => {
             <img
               src={indiaInSpace.image_url}
               alt={indiaInSpace.title}
-              className="w-full h-32 object-cover rounded-lg mb-3"
+              className="mb-3 h-32 w-full rounded-lg object-cover"
             />
           )}
           <p className="text-xs text-foreground/80 line-clamp-2 mb-2">{indiaInSpace.description}</p>
@@ -131,11 +132,8 @@ const RightSidebar = () => {
         </section>
       )}
 
-      <section className="glass-panel p-4">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
-          <Users className="h-4 w-4 text-secondary" />
-          Quick Follow
-        </h3>
+      <section className="border-b border-border pb-4">
+        <h3 className="telemetry mb-3">Who to follow</h3>
         <ul className="space-y-2">
           {whoLoading ? (
             <li className="text-xs text-muted-foreground px-2 py-1">Loading...</li>
@@ -143,15 +141,9 @@ const RightSidebar = () => {
             <li className="text-xs text-muted-foreground px-2 py-1">No startups yet</li>
           ) : (
             whoToFollow.map((startup) => (
-              <li key={startup.id} className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-muted/30 transition-colors">
+              <li key={startup.id} className="flex items-center justify-between gap-2 rounded-md p-2 hover:bg-muted transition-colors">
                 <Link to={`/startup/${startup.slug}`} className="flex items-center gap-2 min-w-0">
-                  <div className="h-8 w-8 rounded-full bg-muted overflow-hidden flex items-center justify-center text-xs">
-                    {startup.logo_url ? (
-                      <img src={startup.logo_url} alt={startup.name} className="h-full w-full object-cover" loading="lazy" />
-                    ) : (
-                      "R"
-                    )}
-                  </div>
+                  {startup.logo_url ? <img src={startup.logo_url} alt={startup.name} className="h-8 w-8 rounded-[28%] object-cover" loading="lazy" /> : <Patch seed={startup.id} label={startup.name} size={32} shape="squircle" />}
                   <span className="text-sm text-foreground truncate">{startup.name}</span>
                 </Link>
                 <FollowChip startupId={startup.id} />
@@ -161,11 +153,8 @@ const RightSidebar = () => {
         </ul>
       </section>
 
-      <section className="glass-panel p-4">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
-          <Users className="h-4 w-4 text-primary" />
-          Popular Communities
-        </h3>
+      <section className="border-b border-border pb-4">
+        <h3 className="telemetry mb-3">Orbits</h3>
         <ul className="space-y-1">
           {popularCommunities.length === 0 ? (
             <li className="text-xs text-muted-foreground px-2 py-1">Loading...</li>
@@ -174,10 +163,10 @@ const RightSidebar = () => {
               <li key={community.slug}>
                 <Link
                   to={`/community/${community.slug}`}
-                  className="flex justify-between items-center text-sm hover:bg-muted/40 rounded-lg px-2 py-1.5 transition-colors"
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                 >
                   <span className="text-foreground">
-                    {community.icon} {community.name}
+                    {community.name}
                   </span>
                   <span className="text-muted-foreground text-xs">{community.posts} posts</span>
                 </Link>
@@ -189,8 +178,8 @@ const RightSidebar = () => {
 
       {/* Roles at startups you follow */}
       {followedRoles.length > 0 && user && (
-        <section className="glass-panel p-4">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
+        <section className="border-b border-border pb-4">
+          <h3 className="telemetry mb-3 flex items-center gap-2">
             <Briefcase className="h-4 w-4 text-secondary" />
             Roles at startups you follow
           </h3>
@@ -199,20 +188,14 @@ const RightSidebar = () => {
               <li key={role.id}>
                 <Link
                   to={`/startup/${role.startups?.slug || ""}#open-roles`}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/30 transition-colors"
+                  className="flex items-center gap-3 rounded-md p-2 hover:bg-muted transition-colors"
                 >
-                  <div className="h-6 w-6 rounded-full bg-muted overflow-hidden shrink-0 flex items-center justify-center text-[10px]">
-                    {role.startups?.logo_url ? (
-                      <img src={role.startups.logo_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      role.startups?.name?.[0] || "R"
-                    )}
-                  </div>
+                  {role.startups?.logo_url ? <img src={role.startups.logo_url} alt="" className="h-7 w-7 shrink-0 rounded-[28%] object-cover" /> : <Patch seed={role.startup_id} label={role.startups?.name} size={28} shape="squircle" />}
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-foreground truncate font-medium">{role.title}</p>
                     <p className="text-[10px] text-muted-foreground truncate">{role.startups?.name}</p>
                   </div>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">
+                  <span className="telemetry rounded-sm border border-border px-1.5 py-0.5 text-primary">
                     {role.role_type}
                   </span>
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
@@ -223,11 +206,8 @@ const RightSidebar = () => {
         </section>
       )}
 
-      <section className="glass-panel p-4">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground mb-3">
-          <Briefcase className="h-4 w-4 text-secondary" />
-          From Space Startups
-        </h3>
+      <section className="border-b border-border pb-4">
+        <h3 className="telemetry mb-3">From Launchpad</h3>
         <ul className="space-y-1">
           {topStartups.length === 0 ? (
             <li className="text-xs text-muted-foreground px-2 py-1">Loading...</li>
@@ -236,7 +216,7 @@ const RightSidebar = () => {
               <li key={startup.id}>
                 <Link
                   to={`/startup/${startup.slug}`}
-                  className="flex justify-between items-center text-sm hover:bg-muted/40 rounded-lg px-2 py-1.5 transition-colors"
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 text-sm hover:bg-muted transition-colors"
                 >
                   <span className="text-foreground">{startup.name}</span>
                   <span className="text-xs text-primary">{startup.recent} posts</span>

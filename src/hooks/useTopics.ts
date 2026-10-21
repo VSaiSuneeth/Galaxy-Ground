@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FALLBACK_TOPICS, type TopicCard } from "@/lib/topics";
+import { allowFallbackData } from "@/lib/fallback-data";
 
 const ENABLE_PHASE_B_REMOTE = import.meta.env.VITE_ENABLE_PHASE_B_REMOTE === "true";
 
@@ -83,14 +84,14 @@ export function useTopics() {
   return useQuery({
     queryKey: ["topics"],
     queryFn: async (): Promise<TopicCard[]> => {
-      if (!ENABLE_PHASE_B_REMOTE) return FALLBACK_TOPICS;
+      if (!ENABLE_PHASE_B_REMOTE) return allowFallbackData ? FALLBACK_TOPICS : [];
       try {
         const fromDb = await fetchTopicsFromSupabase();
         if (fromDb?.length) return fromDb;
       } catch {
         // Fall through to static cards when Supabase is unavailable.
       }
-      return FALLBACK_TOPICS;
+      return allowFallbackData ? FALLBACK_TOPICS : [];
     },
     staleTime: 60_000,
   });

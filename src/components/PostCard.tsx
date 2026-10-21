@@ -1,13 +1,15 @@
-import { Heart, MessageCircle, Share2, Trash2, ExternalLink, Rocket, Sparkles, BadgeCheck, MoreHorizontal, Bookmark } from "lucide-react";
+import { Heart, MessageCircle, Share2, Trash2, ExternalLink, BadgeCheck, MoreHorizontal, Bookmark } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { timeAgo, avatarEmoji } from "@/lib/post-utils";
+import { timeAgo } from "@/lib/post-utils";
 import CommentsSection from "./CommentsSection";
 import MediaLightbox from "./MediaLightbox";
+import ReportButton from "./ReportButton";
+import { Patch } from "@/components/brand/Patch";
+import { UserAvatar } from "@/components/brand/UserAvatar";
 import type { FeedPost } from "@/types/feed";
 import { asArray, logDataIssue, normalizeFeedPost } from "@/lib/safe-data";
 import { useFollow } from "@/hooks/useFollow";
@@ -16,6 +18,7 @@ import { useUserBadges } from "@/hooks/useUserBadges";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { extractHashtags } from "@/lib/post-utils";
+import { COMMUNITY_BY_SLUG } from "@/lib/communities";
 
 interface Props {
   post: FeedPost;
@@ -90,7 +93,7 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
     setLiked(willLike);
     setMyReaction(willLike ? reactionType : null);
     setLikes((n) => n + (willLike ? 1 : -1));
-    let error: any = null;
+    let error: { message: string } | null = null;
     if (isUser) {
       ({ error } = willLike
         ? await supabase.from("likes").insert({ post_id: post.id, user_id: user.id })
@@ -152,28 +155,16 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
   const fullText = post.content || "";
   const isLong = fullText.length > TRUNCATE_LEN;
   const visibleText = expanded || !isLong ? fullText : fullText.slice(0, TRUNCATE_LEN).trimEnd() + "…";
+  const orbitName = post.community
+    ? COMMUNITY_BY_SLUG[post.community]?.name || post.community.replace(/-/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase())
+    : null;
 
   return (
     <>
-      <motion.article
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-panel p-4 hover:border-primary/20 transition-colors"
-      >
+      <article className="border-b border-border px-3 py-4 transition-colors hover:bg-card/40 sm:px-4">
         <div className="flex items-center gap-3 mb-3">
-          <Link
-            to={profileHref}
-            className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-lg font-bold text-primary overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all"
-          >
-            {author?.avatar_url ? (
-              <img src={author.avatar_url} alt={displayName} className="h-full w-full object-cover" loading="lazy" />
-            ) : isStartup ? (
-              <Rocket className="h-5 w-5" />
-            ) : isThemed ? (
-              <Sparkles className="h-5 w-5" />
-            ) : (
-              avatarEmoji(post.user_id)
-            )}
+          <Link to={profileHref} className="shrink-0">
+            <UserAvatar src={author?.avatar_url} seed={authorId} label={displayName} size={44} shape={isUser ? "circle" : "squircle"} />
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -196,43 +187,35 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
                   ))}
                 </div>
               )}
-              <span className="text-xs text-muted-foreground">@{username}</span>
+              <span className="text-[13px] text-muted-foreground">@{username}</span>
               {!hideFollow && (
                 <button
                   onClick={toggleFollow}
                   disabled={followBusy}
-                  className={`ml-auto px-2 py-1 rounded-md text-xs transition-colors ${
-                    isFollowing ? "border border-glass-border text-foreground hover:bg-muted/40" : "bg-primary/10 text-primary hover:bg-primary/20"
+                  className={`ml-auto rounded-full px-2.5 py-1 text-[13px] transition-colors ${
+                    isFollowing ? "border border-border text-foreground hover:bg-muted" : "border border-primary text-primary hover:bg-accent"
                   }`}
                 >
                   {isFollowing ? "Following" : "Follow"}
                 </button>
               )}
               {isStartup && (
-                <span className="text-[10px] uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                <span className="telemetry rounded-sm border border-border px-1.5 py-0.5 text-primary">
                   Startup
                 </span>
               )}
               {isThemed && (
-                <span className="text-[10px] uppercase tracking-wider text-secondary bg-secondary/10 px-2 py-0.5 rounded-full">
+                <span className="telemetry rounded-sm border border-border px-1.5 py-0.5 text-primary">
                   Creator
                 </span>
               )}
-              {post.community && (
-                <Link
-                  to={`/community/${post.community}`}
-                  className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full hover:bg-primary/20"
-                >
-                  {post.community}
-                </Link>
-              )}
             </div>
-            <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
+            <p className="telemetry mt-0.5">{timeAgo(post.created_at)}</p>
           </div>
           {isUser && user?.id === post.user_id && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                <button aria-label="Post options" className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
@@ -251,22 +234,28 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
             <textarea
               value={editingText}
               onChange={(e) => setEditingText(e.target.value)}
-              className="w-full min-h-[110px] bg-muted/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="min-h-[110px] w-full rounded-md border border-input bg-muted px-3 py-2 text-sm"
             />
             <div className="flex gap-2">
-              <button onClick={updatePost} className="px-3 py-1.5 rounded-lg text-sm bg-primary text-primary-foreground">Save</button>
-              <button onClick={() => { setIsEditing(false); setEditingText(post.content); }} className="px-3 py-1.5 rounded-lg text-sm border border-glass-border">Cancel</button>
+              <button onClick={updatePost} className="rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-primary-foreground">Save</button>
+              <button onClick={() => { setIsEditing(false); setEditingText(post.content); }} className="rounded-full border border-border px-3 py-1.5 text-sm">Cancel</button>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-foreground/90 mb-2 leading-relaxed whitespace-pre-wrap break-words">
+          <p className="mb-2 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-foreground">
             {renderWithHashtags(visibleText)}
           </p>
+        )}
+        {post.community && orbitName && (
+          <Link to={`/community/${post.community}`} className="mb-3 inline-flex items-center gap-1.5 telemetry hover:text-primary">
+            <Patch seed={post.community} label={orbitName} size={16} shape="squircle" />
+            Orbit · {orbitName}
+          </Link>
         )}
         {isLong && (
           <button
             onClick={() => setExpanded((e) => !e)}
-            className="text-xs text-primary hover:underline mb-3"
+            className="mb-3 text-[13px] text-primary hover:underline"
           >
             {expanded ? "Show less" : "Read more"}
           </button>
@@ -274,7 +263,7 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
 
         {post.media_url && post.media_type === "image" && !imgErrored && (
           <div
-            className="rounded-lg overflow-hidden mb-3 border border-glass-border cursor-zoom-in group relative"
+            className="group relative mb-3 cursor-zoom-in overflow-hidden rounded-lg border border-border"
             onClick={() => setLightbox(true)}
           >
             <img
@@ -282,31 +271,33 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
               alt=""
               loading="lazy"
               onError={() => setImgErrored(true)}
-              className="w-full max-h-[500px] object-cover transition-transform group-hover:scale-[1.02]"
+              className="max-h-[500px] w-full object-cover"
             />
           </div>
         )}
         {post.media_url && post.media_type === "video" && (
           <div
-            className="rounded-lg overflow-hidden mb-3 border border-glass-border cursor-pointer"
+            className="mb-3 cursor-pointer overflow-hidden rounded-lg border border-border"
             onClick={() => setLightbox(true)}
           >
             <video src={post.media_url} className="w-full max-h-[500px] pointer-events-none" />
           </div>
         )}
 
-        <div className="flex items-center gap-1 pt-2 border-t border-glass-border">
+        <div className="flex items-center gap-1 border-t border-border pt-2">
           <Popover open={reactionOpen} onOpenChange={setReactionOpen}>
             <PopoverTrigger asChild>
               <button
                 onClick={() => toggleLike(myReaction || "like")}
                 onContextMenu={(e) => { e.preventDefault(); setReactionOpen(true); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all ${
-                  liked ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                aria-label="Boost post"
+                title="Boost post"
+                className={`flex min-h-10 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${
+                  liked ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 <Heart className={`h-4 w-4 transition-transform ${liked ? "fill-current scale-110" : ""}`} />
-                <span>{likes}</span>
+                <span className="font-mono text-[13px] tabular-nums">{likes}</span>
                 {myReaction && <span className="text-xs">{REACTION_LABELS.get(myReaction) ?? myReaction}</span>}
               </button>
             </PopoverTrigger>
@@ -326,7 +317,9 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
           </Popover>
           <button
             onClick={() => setShowComments((s) => !s)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            aria-label="Comments"
+            title="Comments"
+            className="flex min-h-10 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <MessageCircle className="h-4 w-4" />
             <span>{commentCount}</span>
@@ -336,7 +329,9 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
               href={post.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              aria-label="Open source"
+              title="Open source"
+              className="flex min-h-10 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <ExternalLink className="h-4 w-4" />
               <span>Source</span>
@@ -344,15 +339,26 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
           )}
           <button
             onClick={share}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            aria-label="Share post"
+            title="Share post"
+            className="flex min-h-10 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <Share2 className="h-4 w-4" />
             <span>Share</span>
           </button>
+          {user?.id !== post.user_id && (
+            <ReportButton
+              targetType={isUser ? "post" : isStartup ? "startup_post" : "themed_post"}
+              targetId={isUser ? post.id : post.target_id || post.id}
+              className="text-muted-foreground hover:text-destructive"
+            />
+          )}
           <button
             onClick={() => toggleBookmark(post.id, isBookmarked, post.source || "user")}
-            className={`ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-              isBookmarked ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            aria-label="Save post"
+            title="Save post"
+            className={`ml-auto flex min-h-10 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors ${
+              isBookmarked ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
@@ -376,7 +382,7 @@ const PostCard = ({ post: rawPost, onDeleted }: Props) => {
               ? <CommentsSection targetType={aggregateType} targetId={post.target_id} onCountChange={setCommentCount} />
               : null
         )}
-      </motion.article>
+      </article>
 
       {post.media_url && (post.media_type === "image" || post.media_type === "video") && (
         <MediaLightbox

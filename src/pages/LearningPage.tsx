@@ -2,7 +2,6 @@ import {
   BadgeCheck,
   BookOpen,
   Clock,
-  GraduationCap,
   Layers,
   Loader2,
   Lock,
@@ -10,9 +9,9 @@ import {
   Star,
   Users,
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useLearningPaths } from "@/hooks/useLearning";
+import PageHeader from "@/components/kit/PageHeader";
 
 const categories = [
   "Space Science",
@@ -33,52 +32,28 @@ const levelColor: Record<string, string> = {
 
 const LearningPage = () => {
   const { data: paths = [], isLoading } = useLearningPaths();
-  const usingSupabase = paths.some((path) => path.dataSource === "supabase");
-
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <section className="glass-panel p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <GraduationCap className="h-6 w-6 text-primary" />
-            </div>
-            <h1 className="text-3xl font-bold text-foreground glow-text">Learning Hub</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              Curated space education paths for learners, builders, and future instructors. The current page focuses on
-              free structured learning while leaving clean room for paid courses later.
-            </p>
-          </div>
-          <div className="rounded-xl border border-glass-border bg-muted/30 p-4 text-sm">
-            <p className="font-medium text-foreground">MVP learning mode</p>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Free paths first, paid courses after backend enrollments, instructors, purchases, and certificates exist.
-            </p>
-          </div>
-        </div>
-      </section>
+    <div className="mx-auto max-w-4xl space-y-6 animate-enter">
+      <PageHeader title="Learn" eyebrow="Learning paths" subtitle="Short, curated paths from first look to flight-ready." />
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {categories.map((category) => (
-          <div key={category} className="rounded-lg border border-glass-border bg-card/60 p-3 text-sm text-foreground">
+          <div key={category} className="rounded-sm border border-border px-3 py-2 text-sm text-foreground">
             {category}
           </div>
         ))}
       </section>
 
       {isLoading ? (
-        <div className="glass-panel flex justify-center p-10">
+        <div className="flex justify-center py-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : (
       <section className="grid gap-4 md:grid-cols-2">
-        {paths.map((path, index) => (
-          <motion.article
+        {paths.map((path) => (
+          <article
             key={path.slug}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.06 }}
-            className="glass-panel p-5"
+            className="rounded-lg border border-border bg-card p-5"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -137,26 +112,16 @@ const LearningPage = () => {
             >
               Open learning path
             </Link>
-          </motion.article>
+          </article>
         ))}
       </section>
       )}
-
-      <section className="glass-panel p-5">
-        <h2 className="font-semibold text-foreground">Data source</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {usingSupabase
-            ? "Learning paths are reading free courses, modules, and lessons from Supabase."
-            : "Learning paths are using local fallback data until Supabase course tables are applied."}
-          {" "}Payments, instructors, and certificates remain future work.
-        </p>
-      </section>
     </div>
   );
 };
 
 const LearningList = ({ icon, title, items }: { icon: React.ReactNode; title: string; items: string[] }) => (
-  <div className="mt-4 border-t border-glass-border pt-4">
+  <div className="mt-4 border-t border-border pt-4">
     <div className="mb-2 flex items-center gap-1.5 text-sm font-medium text-foreground">
       <span className="text-primary">{icon}</span>
       {title}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -6,6 +6,7 @@ import { Send, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { timeAgo, avatarEmoji } from "@/lib/post-utils";
 import { asArray } from "@/lib/safe-data";
+import ReportButton from "./ReportButton";
 
 interface Comment {
   id: string;
@@ -14,6 +15,9 @@ interface Comment {
   created_at: string;
   author: { username: string | null; display_name: string | null } | null;
 }
+
+type CommentRow = Omit<Comment, "author">;
+type CommentAuthor = NonNullable<Comment["author"]> & { user_id: string };
 
 type Props =
   | { postId: string; targetType?: undefined; targetId?: undefined; onCountChange?: (n: number) => void }
@@ -28,39 +32,47 @@ const CommentsSection = (props: Props) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const isAggregate = !!props.targetType;
+  const targetType = props.targetType;
+  const targetId = props.targetId;
+  const postId = props.postId;
+  const onCountChange = props.onCountChange;
 
-  const load = async () => {
-    let data: any[] | null = null, error: any = null;
+  const load = useCallback(async () => {
+    let data: CommentRow[] = [];
+    let error: { message: string } | null = null;
     if (isAggregate) {
-      ({ data, error } = await supabase
+      const result = await supabase
         .from("aggregate_comments")
         .select("id, user_id, content, created_at")
-        .eq("target_type", props.targetType!)
-        .eq("target_id", props.targetId!)
-        .order("created_at", { ascending: true }));
+        .eq("target_type", targetType!)
+        .eq("target_id", targetId!)
+        .order("created_at", { ascending: true });
+      data = result.data ?? [];
+      error = result.error;
     } else {
-      ({ data, error } = await supabase
+      const result = await supabase
         .from("comments")
         .select("id, user_id, content, created_at")
-        .eq("post_id", props.postId!)
-        .order("created_at", { ascending: true }));
+        .eq("post_id", postId!)
+        .order("created_at", { ascending: true });
+      data = result.data ?? [];
+      error = result.error;
     }
     if (error) { toast.error(error.message); setLoading(false); return; }
-    const ids = Array.from(new Set((data || []).map((c) => c.user_id)));
+    const ids = Array.from(new Set(data.map((c) => c.user_id)));
     const { data: profiles } = ids.length
       ? await supabase.from("profiles").select("user_id, username, display_name").in("user_id", ids)
-      : { data: [] as any[] };
-    const map = new Map((profiles || []).map((p: any) => [p.user_id, p]));
-    const enriched = (data || []).map((c) => ({ ...c, author: map.get(c.user_id) || null }));
+      : { data: [] as CommentAuthor[] };
+    const map = new Map((profiles ?? []).map((profile) => [profile.user_id, profile]));
+    const enriched = data.map((comment) => ({ ...comment, author: map.get(comment.user_id) ?? null }));
     setComments(enriched);
-    props.onCountChange?.(enriched.length);
+    onCountChange?.(enriched.length);
     setLoading(false);
-  };
+  }, [isAggregate, onCountChange, postId, targetId, targetType]);
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAggregate ? props.targetId : props.postId]);
+  }, [load]);
 
   const submit = async () => {
     if (!user) { toast.error("Sign in to comment"); return; }
@@ -151,6 +163,13 @@ const CommentsSection = (props: Props) => {
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
+              )}
+              {user?.id !== c.user_id && (
+                <ReportButton
+                  targetType="comment"
+                  targetId={c.id}
+                  className="h-6 w-6 opacity-0 text-muted-foreground group-hover:opacity-100 hover:text-destructive"
+                />
               )}
             </li>
           ))}

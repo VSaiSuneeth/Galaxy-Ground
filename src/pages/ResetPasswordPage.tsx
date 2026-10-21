@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Rocket, AlertTriangle } from "lucide-react";
+import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatAuthError } from "@/lib/supabase-env";
+import { LogoMark } from "@/components/brand/LogoMark";
+import { Wordmark } from "@/components/brand/Wordmark";
 
 type PageState = "checking" | "ready" | "error";
 
@@ -103,7 +105,7 @@ const ResetPasswordPage = () => {
 
       if (error) throw error;
 
-      toast.success("Password updated successfully! Please sign in with your new password.");
+      toast.success("Password updated. Please sign in with your new password.");
       navigate("/auth", { replace: true });
     } catch (error) {
       const message =
@@ -152,7 +154,7 @@ const ResetPasswordPage = () => {
           placeholder="New Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full bg-muted/30 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+          className="w-full rounded-md border border-input bg-muted px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
           minLength={6}
         />
         <input
@@ -161,13 +163,13 @@ const ResetPasswordPage = () => {
           placeholder="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full bg-muted/30 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+          className="w-full rounded-md border border-input bg-muted px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
           minLength={6}
         />
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+          className="w-full rounded-full bg-brand py-2.5 text-sm font-semibold text-primary-foreground hover:bg-brand/90 transition-colors disabled:opacity-60"
         >
           {submitting ? "Updating…" : "Update Password"}
         </button>
@@ -176,8 +178,8 @@ const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen cosmic-gradient relative flex items-center justify-center p-4">
-      <div className="glass-panel-strong p-8 w-full max-w-md relative z-10">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-8">
         <Link
           to="/auth"
           className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
@@ -185,13 +187,11 @@ const ResetPasswordPage = () => {
           <ArrowLeft className="h-4 w-4" /> Back to sign in
         </Link>
         <div className="flex items-center justify-center gap-2 mb-6">
-          <Rocket className="h-7 w-7 text-primary" />
-          <span className="text-2xl font-bold glow-text text-foreground">
-            Galaxy Ground
-          </span>
+          <LogoMark size={28} />
+          <Wordmark />
         </div>
 
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">
+        <h1 className="font-display text-3xl font-semibold text-foreground text-center mb-1">
           Reset Password
         </h1>
         <p className="text-sm text-muted-foreground text-center mb-6">

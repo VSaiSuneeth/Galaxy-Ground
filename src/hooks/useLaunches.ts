@@ -11,6 +11,7 @@ import {
   type LaunchStatus,
 } from "@/lib/launches";
 import { asArray } from "@/lib/safe-data";
+import { allowFallbackData } from "@/lib/fallback-data";
 
 const ENABLE_PHASE_B_REMOTE = import.meta.env.VITE_ENABLE_PHASE_B_REMOTE === "true";
 
@@ -136,7 +137,7 @@ export function useLaunches() {
     queryKey: ["launches"],
     queryFn: async (): Promise<Launch[]> => {
       if (!ENABLE_PHASE_B_REMOTE) {
-        return LAUNCHES.map((launch) => ({ ...launch, dataSource: "fallback" as const }));
+        return allowFallbackData ? LAUNCHES.map((launch) => ({ ...launch, dataSource: "fallback" as const })) : [];
       }
       try {
         const fromDb = await fetchLaunchesFromSupabase();
@@ -144,7 +145,7 @@ export function useLaunches() {
       } catch {
         // Use static fallback when remote tables are unavailable.
       }
-      return LAUNCHES.map((launch) => ({ ...launch, dataSource: "fallback" as const }));
+      return allowFallbackData ? LAUNCHES.map((launch) => ({ ...launch, dataSource: "fallback" as const })) : [];
     },
     staleTime: 60_000,
   });
@@ -163,7 +164,7 @@ export function useLaunch(slug: string) {
           // Fall through to static launch detail.
         }
       }
-      const fallback = getStaticLaunchBySlug(slug);
+      const fallback = allowFallbackData ? getStaticLaunchBySlug(slug) : null;
       if (!fallback) return null;
       return {
         ...fallback,

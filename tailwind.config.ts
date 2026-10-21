@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -14,7 +15,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Space Grotesk", "system-ui", "sans-serif"],
+        sans: ["Instrument Sans Variable", "system-ui", "sans-serif"],
+        display: ["Fraunces Variable", "Georgia", "serif"],
+        mono: ["JetBrains Mono Variable", "ui-monospace", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -60,15 +63,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        glass: {
-          DEFAULT: "hsl(var(--glass))",
-          border: "hsl(var(--glass-border))",
-        },
-        glow: {
-          cyan: "hsl(var(--glow-cyan))",
-          violet: "hsl(var(--glow-violet))",
-          blue: "hsl(var(--glow-blue))",
-        },
+        brand: { DEFAULT: "hsl(var(--brand))", foreground: "hsl(var(--primary-foreground))" },
+        signal: "hsl(154 57% 60%)",
+        caution: "hsl(40 90% 60%)",
+        info: "hsl(217 70% 70%)",
+        glass: { DEFAULT: "hsl(var(--card))", border: "hsl(var(--border))" },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -91,5 +90,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

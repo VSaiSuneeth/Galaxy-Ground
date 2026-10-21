@@ -14,7 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { 
   Shield, Database, Clock, Calendar, Award, Building2, 
-  CheckCircle2, XCircle, Loader2, Plus, Trash2, Edit, Save
+  CheckCircle2, XCircle, Flag, Loader2, Plus, Trash2, Edit, Save
 } from "lucide-react";
 
 const AdminDashboardPage = () => {
@@ -74,6 +74,7 @@ const AdminDashboardPage = () => {
           <TabsTrigger value="roles">Open Roles</TabsTrigger>
           <TabsTrigger value="vendors">Vendors</TabsTrigger>
           <TabsTrigger value="badges">Badge Awards</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
         </TabsList>
 
         <TabsContent value="content">
@@ -102,6 +103,10 @@ const AdminDashboardPage = () => {
 
         <TabsContent value="badges">
           <BadgeAwardsPanel />
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <ModerationReportsPanel />
         </TabsContent>
       </Tabs>
     </div>
@@ -529,6 +534,73 @@ const BadgeAwardsPanel = () => {
             {(!awards || awards.length === 0) && (
               <p className="text-sm text-muted-foreground text-center py-4">No badge awards found</p>
             )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+const ModerationReportsPanel = () => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { data: reports = [], isLoading } = useQuery({
+    queryKey: ["moderation-reports"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("moderation_reports")
+        .select("id, reporter_id, target_type, target_id, reason, details, status, created_at, reviewed_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const updateReport = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "open" | "reviewing" | "resolved" | "dismissed" }) => {
+      const { error } = await supabase
+        .from("moderation_reports")
+        .update({ status, reviewed_by: user!.id, reviewed_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["moderation-reports"] }),
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Flag className="h-5 w-5" /> Moderation reports</CardTitle>
+        <CardDescription>Reports submitted by Galaxy Ground members.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div> : (
+          <div className="space-y-3">
+            {reports.map((report) => (
+              <article key={report.id} className="rounded-lg border bg-muted/30 p-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{report.target_type}: {report.reason}</p>
+                    {report.details && <p className="mt-1 text-sm text-muted-foreground break-words">{report.details}</p>}
+                    <p className="mt-2 text-xs text-muted-foreground">Reported {new Date(report.created_at).toLocaleString()}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={report.status === "open" ? "destructive" : "secondary"}>{report.status}</Badge>
+                    <Select value={report.status} onValueChange={(status: "open" | "reviewing" | "resolved" | "dismissed") => updateReport.mutate({ id: report.id, status })}>
+                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="open">Open</SelectItem>
+                        <SelectItem value="reviewing">Reviewing</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                        <SelectItem value="dismissed">Dismissed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </article>
+            ))}
+            {reports.length === 0 && <p className="py-4 text-center text-sm text-muted-foreground">No moderation reports found.</p>}
           </div>
         )}
       </CardContent>

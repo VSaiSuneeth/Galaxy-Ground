@@ -1,8 +1,12 @@
 import { AlertTriangle, Database, RefreshCw } from "lucide-react";
 import { useSupabaseHealth } from "@/hooks/useSupabaseHealth";
+import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 
 const SupabaseHealthBanner = () => {
   const { data, isLoading, refetch, isFetching } = useSupabaseHealth();
+  const { user } = useAuth();
+  const { data: isAdmin } = useAdminRole(user?.id);
 
   if (isLoading || !data) return null;
 
@@ -21,8 +25,21 @@ const SupabaseHealthBanner = () => {
     return null;
   }
 
+  const canInspect = import.meta.env.DEV || isAdmin === true;
+
+  if (!canInspect) {
+    if (!connIssue && !envIssue) return null;
+    return (
+      <div role="status" className="mb-3 flex min-h-9 items-center gap-2 border-b border-caution/30 bg-caution/10 px-3 text-sm text-foreground">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-caution" />
+        We're having trouble reaching our servers. Some content may be out of date.
+      </div>
+    );
+  }
+
   return (
-    <div className="mb-4 glass-panel border border-destructive/30 p-4 text-sm">
+    <details className="mb-3 border-b border-caution/30 bg-caution/10 px-3 py-2 text-sm">
+      <summary className="cursor-pointer font-medium text-foreground">Service diagnostics</summary>
       <div className="flex items-start gap-3">
         <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
         <div className="flex-1 space-y-2">
@@ -74,9 +91,7 @@ const SupabaseHealthBanner = () => {
 
           {emptyDb && (
             <p className="text-muted-foreground">
-              Connected, but feed tables are empty (0 posts). Run migrations on project{" "}
-              <code className="text-xs">lmdswaagcdxulcczkqmu</code> and optionally invoke edge functions for RSS content.
-              User posts require signing in and creating content.
+              Connected, but feed tables are empty. User posts require signing in and creating content.
             </p>
           )}
 
@@ -98,7 +113,7 @@ const SupabaseHealthBanner = () => {
           </button>
         </div>
       </div>
-    </div>
+    </details>
   );
 };
 

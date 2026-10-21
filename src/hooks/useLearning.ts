@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { LEARNING_PATHS, type LearningPathDetail } from "@/lib/learning";
+import { allowFallbackData } from "@/lib/fallback-data";
 
 const ENABLE_PHASE_B_REMOTE = import.meta.env.VITE_ENABLE_PHASE_B_REMOTE === "true";
 
@@ -22,7 +23,7 @@ export function useLearningPaths() {
   return useQuery({
     queryKey: ["learning-paths"],
     queryFn: async (): Promise<LearningPathCard[]> => {
-      if (!ENABLE_PHASE_B_REMOTE) return FALLBACK_PATHS;
+      if (!ENABLE_PHASE_B_REMOTE) return allowFallbackData ? FALLBACK_PATHS : [];
 
       const { data: courses, error } = await supabase
         .from("courses")
@@ -30,10 +31,10 @@ export function useLearningPaths() {
         .order("sort_order");
 
       if (error) {
-        if (isMissingTableError(error)) return FALLBACK_PATHS;
+        if (isMissingTableError(error) && allowFallbackData) return FALLBACK_PATHS;
         throw error;
       }
-      if (!courses?.length) return FALLBACK_PATHS;
+      if (!courses?.length) return allowFallbackData ? FALLBACK_PATHS : [];
 
       const courseIds = courses.map((c) => c.id);
       const [modulesRes, lessonsRes] = await Promise.all([

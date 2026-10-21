@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Galaxy Ground</title>
+    <title>Galaxy Ground - Your ground station for everything space</title>
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0a0a1a" />
+    <meta name="theme-color" content="#0E0D0C" />
 
     <!-- SEO -->
-    <meta name="description" content="Space community hub — feed, startups, missions, and learning." />
+    <meta name="description" content="Your ground station for everything space." />
     <meta property="og:title" content="Galaxy Ground" />
-    <meta property="og:description" content="Space community hub — feed, startups, missions, and learning." />
+    <meta property="og:description" content="Your ground station for everything space." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://galaxyground.app/" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -27,6 +27,7 @@
   </head>
 
   <body>
+    <script>try{var t=localStorage.getItem('gg-theme')||'dark';document.documentElement.classList.toggle('dark',t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))}catch(e){}</script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

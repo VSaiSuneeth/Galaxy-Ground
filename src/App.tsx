@@ -4,15 +4,17 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import AppLayout from "@/components/layout/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { PageLoading } from "@/components/PageState";
 import { QUERY_DEFAULTS } from "@/lib/query-config";
+import { ThemeProvider } from "next-themes";
 
 // Eager-loaded pages (critical path)
 import HomeFeed from "@/pages/HomeFeed";
 import AuthPage from "@/pages/AuthPage";
+import LandingPage from "@/pages/LandingPage";
 
 // Lazy-loaded pages (split into separate chunks)
 const ExplorePage = lazy(() => import("@/pages/ExplorePage"));
@@ -51,7 +53,14 @@ const queryClient = new QueryClient({
 
 const PageLoader = () => <PageLoading label="Loading page…" />;
 
+const LandingGate = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  return user ? <AppLayout><HomeFeed /></AppLayout> : <LandingPage />;
+};
+
 const App = () => (
+  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="gg-theme">
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -77,15 +86,15 @@ const App = () => (
                 </ErrorBoundary>
               }
             />
+            <Route
+              path="/"
+              element={
+                <ErrorBoundary label="Landing">
+                  <LandingGate />
+                </ErrorBoundary>
+              }
+            />
             <Route element={<AppLayout />}>
-              <Route
-                path="/"
-                element={
-                  <ErrorBoundary label="HomeFeed">
-                    <HomeFeed />
-                  </ErrorBoundary>
-                }
-              />
               <Route
                 path="/explore"
                 element={
@@ -393,6 +402,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ThemeProvider>
 );
 
 export default App;

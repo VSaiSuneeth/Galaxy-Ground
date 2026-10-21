@@ -3,9 +3,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { asArray, flattenPostPages, logDataIssue, normalizeFeedPost, normalizeFeedPosts } from "@/lib/safe-data";
 import { QUERY_DEFAULTS } from "@/lib/query-config";
 import type { FeedPost } from "@/types/feed";
+import type { Database } from "@/integrations/supabase/types";
 import { buildGeneratedPostDisplay } from "@/lib/generated-content-presentation";
 
 export type { FeedPost };
+
+type TableOrView = keyof (Database["public"]["Tables"] & Database["public"]["Views"]);
+type TableRow<Table extends TableOrView> = (Database["public"]["Tables"] & Database["public"]["Views"])[Table]["Row"];
+type LikeRow = Pick<TableRow<"likes">, "post_id">;
+type ReactionRow = Pick<TableRow<"aggregate_reactions">, "target_type" | "target_id" | "reaction_type">;
+type BookmarkRow = Pick<TableRow<"bookmarks">, "post_id">;
+type PostRow = Pick<TableRow<"posts">, "id" | "user_id" | "content" | "media_url" | "media_type" | "community" | "hashtags" | "created_at">;
+type ProfileRow = Pick<TableRow<"profiles">, "user_id" | "username" | "display_name" | "avatar_url">;
+type PostStatRow = Pick<TableRow<"post_stats">, "post_id" | "likes_count" | "comments_count">;
 
 interface Filter {
   userId?: string;
@@ -41,23 +51,23 @@ const hydrateFeedPostsWithInteractions = async (posts: FeedPost[], userId?: stri
   const [likesResult, reactionsResult, bookmarksResult] = await Promise.all([
     userPostIds.length
       ? supabase.from("likes").select("post_id").eq("user_id", userId).in("post_id", userPostIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as LikeRow[] }),
     aggregateTargetIds.length && aggregateTargetTypes.length
       ? supabase.from("aggregate_reactions").select("target_type, target_id, reaction_type").eq("user_id", userId).in("target_type", aggregateTargetTypes).in("target_id", aggregateTargetIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ReactionRow[] }),
     bookmarkIds.length
       ? supabase.from("bookmarks").select("post_id").eq("user_id", userId).in("post_id", bookmarkIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as BookmarkRow[] }),
   ]);
 
-  const likedPostIds = new Set(asArray<any>((likesResult as any).data).map((row) => row.post_id).filter(Boolean));
+  const likedPostIds = new Set(asArray<LikeRow>(likesResult.data).map((row) => row.post_id).filter(Boolean));
   const reactedByTarget = new Map<string, string | null>();
-  for (const row of asArray<any>((reactionsResult as any).data)) {
+  for (const row of asArray<ReactionRow>(reactionsResult.data)) {
     const targetType = row.target_type as "startup" | "themed" | undefined;
     const targetId = row.target_id as string | undefined;
     if (targetType && targetId) reactedByTarget.set(`${targetType}:${targetId}`, row.reaction_type ?? null);
   }
-  const bookmarkedPostIds = new Set(asArray<any>((bookmarksResult as any).data).map((row) => row.post_id).filter(Boolean));
+  const bookmarkedPostIds = new Set(asArray<BookmarkRow>(bookmarksResult.data).map((row) => row.post_id).filter(Boolean));
 
   return posts.map((post) => {
     const reactionKey = post.source && post.source !== "user" && post.target_id ? `${post.source}:${post.target_id}` : null;
@@ -105,9 +115,9 @@ const getFeedPage = async (filter: Filter = {}, page: number): Promise<FeedPost[
       return [];
     }
 
-    const posts = asArray<any>(rpcData).map((p: any) => ({
-      ...p,
-      reaction_summary: p.reaction_summary || [],
+    const posts = asArray<FeedPost>(rpcData).map((post) => ({
+      ...post,
+      reaction_summary: post.reaction_summary || [],
     }));
 
     // Hydrate with user-specific interactions (RPC doesn't include these)
@@ -137,21 +147,21 @@ const getProfileFeed = async (filter: Filter, page: number, userId?: string): Pr
     return [];
   }
 
-  const postRows = asArray<any>(posts);
+  const postRows = asArray<PostRow>(posts);
   const userIds = Array.from(new Set(postRows.map((p) => p.user_id).filter(Boolean)));
   const postIds = postRows.map((p) => p.id).filter(Boolean);
 
   const [profilesRes, statsRes] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", userIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ProfileRow[] }),
     postIds.length
       ? supabase.from("post_stats").select("post_id, likes_count, comments_count").in("post_id", postIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as PostStatRow[] }),
   ]);
 
-  const profileMap = new Map(asArray<any>((profilesRes as any).data).map((p: any) => [p.user_id, p]));
-  const statMap = new Map(asArray<any>((statsRes as any).data).map((s: any) => [s.post_id, s]));
+  const profileMap = new Map(asArray<ProfileRow>(profilesRes.data).map((profile) => [profile.user_id, profile]));
+  const statMap = new Map(asArray<PostStatRow>(statsRes.data).map((stat) => [stat.post_id, stat]));
 
   const userFeed: FeedPost[] = postRows.map((p) =>
     normalizeFeedPost({
@@ -185,21 +195,21 @@ const getCommunityFeed = async (filter: Filter, page: number, userId?: string): 
     return [];
   }
 
-  const postRows = asArray<any>(posts);
+  const postRows = asArray<PostRow>(posts);
   const userIds = Array.from(new Set(postRows.map((p) => p.user_id).filter(Boolean)));
   const postIds = postRows.map((p) => p.id).filter(Boolean);
 
   const [profilesRes, statsRes] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", userIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ProfileRow[] }),
     postIds.length
       ? supabase.from("post_stats").select("post_id, likes_count, comments_count").in("post_id", postIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as PostStatRow[] }),
   ]);
 
-  const profileMap = new Map(asArray<any>((profilesRes as any).data).map((p: any) => [p.user_id, p]));
-  const statMap = new Map(asArray<any>((statsRes as any).data).map((s: any) => [s.post_id, s]));
+  const profileMap = new Map(asArray<ProfileRow>(profilesRes.data).map((profile) => [profile.user_id, profile]));
+  const statMap = new Map(asArray<PostStatRow>(statsRes.data).map((stat) => [stat.post_id, stat]));
 
   const userFeed: FeedPost[] = postRows.map((p) =>
     normalizeFeedPost({
@@ -233,21 +243,21 @@ const getHashtagFeed = async (filter: Filter, page: number, userId?: string): Pr
     return [];
   }
 
-  const postRows = asArray<any>(posts);
+  const postRows = asArray<PostRow>(posts);
   const userIds = Array.from(new Set(postRows.map((p) => p.user_id).filter(Boolean)));
   const postIds = postRows.map((p) => p.id).filter(Boolean);
 
   const [profilesRes, statsRes] = await Promise.all([
     userIds.length
       ? supabase.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", userIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as ProfileRow[] }),
     postIds.length
       ? supabase.from("post_stats").select("post_id, likes_count, comments_count").in("post_id", postIds)
-      : Promise.resolve({ data: [] as any[] }),
+      : Promise.resolve({ data: [] as PostStatRow[] }),
   ]);
 
-  const profileMap = new Map(asArray<any>((profilesRes as any).data).map((p: any) => [p.user_id, p]));
-  const statMap = new Map(asArray<any>((statsRes as any).data).map((s: any) => [s.post_id, s]));
+  const profileMap = new Map(asArray<ProfileRow>(profilesRes.data).map((profile) => [profile.user_id, profile]));
+  const statMap = new Map(asArray<PostStatRow>(statsRes.data).map((stat) => [stat.post_id, stat]));
 
   const userFeed: FeedPost[] = postRows.map((p) =>
     normalizeFeedPost({

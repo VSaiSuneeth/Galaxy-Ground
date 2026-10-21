@@ -3,8 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Rocket } from "lucide-react";
-import StarField from "@/components/StarField";
+import { LogoMark } from "@/components/brand/LogoMark";
+import { Wordmark } from "@/components/brand/Wordmark";
 import { formatAuthError } from "@/lib/supabase-env";
 
 const AuthPage = () => {
@@ -52,7 +52,7 @@ const AuthPage = () => {
           return;
         }
 
-        toast.success("Account created! Welcome to Galaxy Ground 🚀");
+        toast.success("Account created");
         navigate("/", { replace: true });
         return;
       }
@@ -73,7 +73,7 @@ const AuthPage = () => {
       if (error) throw error;
       if (!data.session) throw new Error("Sign in succeeded but no session was returned.");
 
-      toast.success("Welcome back, explorer 🌌");
+      toast.success("Signed in");
       navigate("/", { replace: true });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Authentication failed";
@@ -84,19 +84,28 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen cosmic-gradient relative flex items-center justify-center p-4">
-      <StarField />
-      <div className="glass-panel-strong p-8 w-full max-w-md relative z-10">
+    <div className="min-h-screen bg-background px-4 py-8 lg:grid lg:grid-cols-2 lg:p-0">
+      <section className="hidden border-r border-border bg-card p-12 lg:flex lg:flex-col lg:justify-between">
+        <Link to="/" className="flex items-center gap-2"><LogoMark size={32} /><Wordmark /></Link>
+        <div>
+          <p className="telemetry mb-3">Ground control</p>
+          <h1 className="max-w-md font-display text-5xl font-semibold leading-tight">Your ground station for everything space.</h1>
+          <p className="mt-5 max-w-md text-muted-foreground">Follow launches, live activity and the people building what comes next.</p>
+        </div>
+        <p className="telemetry">Look up. Stay in the loop.</p>
+      </section>
+      <div className="flex items-center justify-center lg:p-8">
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-7 sm:p-8">
         <Link to="/" className="flex items-center gap-2 justify-center mb-6">
-          <Rocket className="h-7 w-7 text-primary" />
-          <span className="text-xl font-bold glow-text text-foreground">Galaxy Ground</span>
+          <LogoMark size={28} />
+          <Wordmark />
         </Link>
 
-        <h1 className="text-2xl font-bold text-foreground text-center mb-1">
-          {mode === "signin" ? "Welcome back" : mode === "signup" ? "Join the mission" : "Reset your password"}
-        </h1>
+        <h2 className="font-display text-3xl font-semibold text-foreground text-center mb-1">
+          {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
+        </h2>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          {mode === "signin" ? "Sign in to your cosmic account" : mode === "signup" ? "Create your explorer profile" : "Enter your email to receive a password reset link"}
+          {mode === "signin" ? "Sign in to pick up where you left off." : mode === "signup" ? "Join the people tracking every launch." : "Enter your email to receive a password reset link."}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -107,14 +116,14 @@ const AuthPage = () => {
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full bg-muted/30 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="w-full rounded-md border border-input bg-muted px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
               />
               <input
                 type="text"
                 placeholder="Display name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full bg-muted/30 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="w-full rounded-md border border-input bg-muted px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
               />
             </>
           )}
@@ -126,7 +135,7 @@ const AuthPage = () => {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-muted/30 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="w-full rounded-md border border-input bg-muted px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
               />
               <input
                 type="password"
@@ -135,7 +144,7 @@ const AuthPage = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-muted/30 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="w-full rounded-md border border-input bg-muted px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
               />
             </>
           )}
@@ -146,14 +155,14 @@ const AuthPage = () => {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-muted/30 rounded-lg px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="w-full rounded-md border border-input bg-muted px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground"
             />
           )}
 
           <button
             type="submit"
             disabled={submitting}
-            className="w-full py-2.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-60"
+            className="w-full rounded-full bg-brand py-2.5 text-sm font-semibold text-primary-foreground hover:bg-brand/90 transition-colors disabled:opacity-60"
           >
             {submitting ? "Please wait…" :
              mode === "signin" ? "Sign in" :
@@ -209,6 +218,7 @@ const AuthPage = () => {
             </p>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

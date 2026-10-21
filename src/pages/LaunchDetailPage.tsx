@@ -217,7 +217,7 @@ const LaunchDetailPage = () => {
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {launch.dataSource === "supabase"
             ? "This mission page is reading launch data, updates, and sources from Supabase."
-            : "This mission page is using the static launch fallback until Supabase launch tables are applied."}
+            : "Sample data: This mission page is using static launch information until Supabase launch tables are applied."}
         </p>
       </section>
     </div>

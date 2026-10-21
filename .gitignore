@@ -1,5 +1,88 @@
+# # Logs
+# logs
+# *.log
+# npm-debug.log*
+# yarn-debug.log*
+# yarn-error.log*
+# pnpm-debug.log*
+# lerna-debug.log*
+
+# node_modules
+# dist
+# dist-ssr
+# *.local
+
+# # Env (never commit secrets; use .env.example as a template)
+# .env
+# .env.*
+# !.env.example
+# .env.local
+# .env.development.local
+# .env.test.local
+# .env.production.local
+
+# # Supabase CLI temp state (never commit)
+# supabase/.temp/
+
+# # Generated test and browser artifacts
+# playwright-report/
+# test-results/
+
+# # Editor directories and files
+# .vscode/*
+# !.vscode/extensions.json
+# .idea
+# .DS_Store
+# *.suo
+# *.ntvs*
+# *.njsproj
+# *.sln
+# *.sw?
+
+# .vercel
+
+
+# # Dependencies and build output
+# node_modules/
+# dist/
+# dist-ssr/
+
+# # Environment files: never commit real secrets
+# .env
+# .env.*
+# !.env.example
+
+# # Logs
+# logs/
+# *.log
+# npm-debug.log*
+# yarn-debug.log*
+# lerna-debug.log*
+# pnpm-debug.log*
+
+# # Local tooling
+# .vercel/
+# .vscode/*
+# !.vscode/extensions.json
+# .idea/
+# .DS_Store
+# *.local
+
+# # Supabase local temporary files
+# supabase/.temp/
+
+# # Test artifacts
+# playwright-report/
+# test-results/
+
+
+# Dependencies and build output
+node_modules/
+dist/
+dist-ssr/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,15 +90,11 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Env (never commit secrets; use .env.example as a template)
+# Environment files (never commit secrets; use .env.example as a template)
 .env
 .env.*
 !.env.example
+*.local
 .env.local
 .env.development.local
 .env.test.local
@@ -31,10 +110,14 @@ test-results/
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Local tooling / Deployments
+.vercel/
+

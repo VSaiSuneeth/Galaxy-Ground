@@ -12,6 +12,11 @@
 
 type MetricName = "CLS" | "FCP" | "FID" | "INP" | "LCP" | "TTFB";
 
+interface LayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean;
+  value: number;
+}
+
 function logMetric(name: MetricName, value: number): void {
   if (!import.meta.env.PROD) return;
 
@@ -49,7 +54,8 @@ export function reportWebVitals(): void {
     let clsValue = 0;
     new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (!(entry as any).hadRecentInput) clsValue += (entry as any).value;
+        const layoutShift = entry as LayoutShiftEntry;
+        if (!layoutShift.hadRecentInput) clsValue += layoutShift.value;
       }
       logMetric("CLS", clsValue);
     }).observe({ type: "layout-shift", buffered: true });

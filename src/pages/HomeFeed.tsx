@@ -4,20 +4,13 @@ import PostSkeleton from "@/components/PostSkeleton";
 import { usePosts } from "@/hooks/usePosts";
 import { useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, Loader2, Search } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { asArray } from "@/lib/safe-data";
 import { useFeaturedContent } from "@/hooks/useFeaturedContent";
 import { IntelTabContent } from "@/components/intel/IntelTabContent";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
 
 type FeedMode = "for-you" | "following" | "recent" | "intel";
 
@@ -29,7 +22,6 @@ const HomeFeed = () => {
     data: posts,
     isLoading,
     isError,
-    error,
     refetch,
     fetchNextPage,
     hasNextPage,
@@ -68,57 +60,40 @@ const HomeFeed = () => {
   }, [mode]);
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="mx-auto max-w-2xl space-y-4 animate-enter">
       <CreatePost onCreated={refresh} />
 
       {/* Spotlight Section */}
       {featuredContent && featuredContent.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold mb-4">Spotlight</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredContent.slice(0, 4).map((item) => (
+        <section className="mb-6">
+          <p className="telemetry mb-2">Today in space</p>
+          <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:-mx-4 sm:px-4">
+            {featuredContent.slice(0, 6).map((item) => (
               <a
                 key={item.id}
                 href={item.url || "#"}
                 target={item.url ? "_blank" : undefined}
                 rel="noreferrer"
-                className="group"
+                className="group relative h-44 w-72 shrink-0 snap-start overflow-hidden rounded-lg border border-border bg-muted"
               >
-                <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                  {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      className="h-48 w-full object-cover rounded-t-lg"
-                    />
-                  ) : (
-                    <div className="h-48 bg-muted/30 flex items-center justify-center rounded-t-lg">
-                      <Search className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
-                  <CardHeader className="space-y-2">
-                    <CardTitle className="line-clamp-2">{item.title}</CardTitle>
-                    {item.description && (
-                      <CardDescription className="text-sm text-muted-foreground line-clamp-3">
-                        {item.description}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent />
-                </Card>
+                {item.image_url ? <img src={item.image_url} alt={item.title || "Today in space"} loading="lazy" decoding="async" className="h-full w-full object-cover" /> : <div className="flex h-full flex-col justify-end bg-card p-4"><span className="telemetry mb-2">Horizon</span><p className="line-clamp-3 font-display text-xl font-semibold leading-tight text-foreground">{item.title || "Mission briefing"}</p></div>}
+                {item.image_url && <div className="absolute inset-x-0 bottom-0 bg-black/70 p-3 text-white">
+                  <p className="line-clamp-2 font-display text-lg font-semibold leading-tight">{item.title || "Today in space"}</p>
+                  {item.description && <p className="mt-1 line-clamp-1 text-[13px] text-white/75">{item.description}</p>}
+                </div>}
               </a>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      <div className="glass-panel p-2">
+      <div className="sticky top-0 z-20 -mx-3 border-y border-border bg-background px-3 py-2 sm:-mx-4 sm:px-4">
         <Tabs value={mode} onValueChange={(v) => setMode(v as FeedMode)}>
-          <TabsList className="w-full grid grid-cols-4 bg-muted/40">
+          <TabsList className="grid w-full grid-cols-4 bg-transparent">
             <TabsTrigger value="for-you">For You</TabsTrigger>
             <TabsTrigger value="following">Following</TabsTrigger>
             <TabsTrigger value="recent">Recent</TabsTrigger>
-            <TabsTrigger value="intel">Intel ✦</TabsTrigger>
+            <TabsTrigger value="intel">Intel</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -129,9 +104,9 @@ const HomeFeed = () => {
           {pendingNew && (
             <button
               onClick={() => { setPendingNew(false); refresh(); }}
-              className="w-full glass-panel p-3 text-sm text-primary hover:bg-primary/10 transition-colors"
+              className="mx-auto block rounded-full bg-brand px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-brand/90 transition-colors"
             >
-              ✨ New posts available
+              New posts
             </button>
           )}
           {isLoading ? (
@@ -141,25 +116,22 @@ const HomeFeed = () => {
               <PostSkeleton />
             </>
           ) : isError ? (
-            <div className="glass-panel p-6 text-center">
+            <div className="border-y border-border py-10 text-center">
               <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-destructive/10 text-destructive mb-3">
                 <AlertTriangle className="h-5 w-5" />
               </div>
               <p className="text-sm text-foreground">We could not load the feed right now.</p>
-              {error instanceof Error && (
-                <p className="text-xs text-muted-foreground mt-2 max-w-md mx-auto">{error.message}</p>
-              )}
-              <button onClick={() => refetch()} className="mt-3 px-4 py-1.5 rounded-lg text-sm bg-primary text-primary-foreground hover:bg-primary/90">Retry</button>
+              <button onClick={() => refetch()} className="mt-3 rounded-full border border-border px-4 py-1.5 text-sm hover:bg-muted">Retry</button>
             </div>
           ) : postList.length === 0 ? (
-            <div className="glass-panel p-8 text-center text-sm text-muted-foreground space-y-3">
+            <div className="border-y border-border py-10 text-center text-sm text-muted-foreground space-y-3">
               {mode === "following" ? (
                 <>
-                  <p>Your orbit is quiet right now. Follow creators, startups, and communities to start building your feed.</p>
+                  <p>Nothing here yet. Follow a few startups, creators, or Orbits and their posts land here.</p>
                   <Link to="/discover" className="inline-flex items-center text-primary hover:underline">Discover new people and launches</Link>
                 </>
               ) : (
-                <p>No posts yet. Be the first to share something cosmic 🌌</p>
+                <p>Quiet on the channel. Be the first to post.</p>
               )}
             </div>
           ) : (
@@ -167,13 +139,13 @@ const HomeFeed = () => {
               {postList.map((p) => <PostCard key={p.id} post={p} onDeleted={refresh} />)}
               <div ref={sentinelRef} />
               {isFetchingNextPage && (
-                <div className="glass-panel p-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading more posts...
+                  Loading more posts
                 </div>
               )}
               {!hasNextPage && postCount > 0 && (
-                <div className="glass-panel p-4 text-center text-xs text-muted-foreground">You reached the end of the feed.</div>
+                <div className="border-t border-border py-4 text-center text-sm text-muted-foreground">You're all caught up.</div>
               )}
             </>
           )}

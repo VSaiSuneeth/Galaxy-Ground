@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { ImagePlus, Video, Send, X, Loader2 } from "lucide-react";
+import { ImagePlus, Video, Send, X, Loader2, Orbit } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -90,48 +90,25 @@ const CreatePost = ({ defaultCommunity, onCreated }: Props) => {
       setSelectedCommunity(defaultCommunity || null);
       clearFile();
       onCreated?.();
-    } catch (e: any) {
-      toast.error(e.message || "Failed to post");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to post");
     } finally {
       setPosting(false);
     }
   };
 
   return (
-    <div className="glass-panel p-4">
-      {!location.pathname.startsWith("/community/") && (
-        <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
-          <button
-            onClick={() => setSelectedCommunity(null)}
-            className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${
-              !selectedCommunity ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            None
-          </button>
-          {COMMUNITY_META.map((c) => (
-            <button
-              key={c.slug}
-              onClick={() => setSelectedCommunity(c.slug)}
-              className={`px-3 py-1 rounded-full text-xs whitespace-nowrap transition-colors ${
-                selectedCommunity === c.slug ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {c.icon} {c.name}
-            </button>
-          ))}
-        </div>
-      )}
+    <div className="border-b border-border px-3 py-4 sm:px-4">
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={user ? "Share something about space… use #hashtags" : "Sign in to share with the community"}
+        placeholder={user ? "What's happening up there?" : "Sign in to share with the community"}
         disabled={!user}
-        className="w-full bg-muted/30 rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-1 focus:ring-primary/40 min-h-[80px] disabled:opacity-60"
+        className="min-h-[80px] w-full resize-none rounded-md border border-input bg-muted px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground disabled:opacity-60"
       />
       
       {previewUrl && (
-        <div className="relative mt-3 rounded-lg overflow-hidden border border-glass-border">
+        <div className="relative mt-3 overflow-hidden rounded-lg border border-border">
           {file?.type.startsWith("video") ? (
             <video src={previewUrl} controls className="w-full max-h-80" />
           ) : (
@@ -139,7 +116,8 @@ const CreatePost = ({ defaultCommunity, onCreated }: Props) => {
           )}
           <button
             onClick={clearFile}
-            className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 text-foreground hover:bg-background"
+            aria-label="Remove attachment"
+            className="absolute right-2 top-2 rounded-full bg-background p-1.5 text-foreground hover:bg-muted"
           >
             <X className="h-4 w-4" />
           </button>
@@ -147,25 +125,42 @@ const CreatePost = ({ defaultCommunity, onCreated }: Props) => {
       )}
       <input ref={imgRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
       <input ref={vidRef} type="file" accept="video/*" onChange={onFile} className="hidden" />
-      <div className="flex items-center justify-between mt-3">
-        <div className="flex gap-2">
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-1">
           <button
             onClick={() => pick("image")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            aria-label="Add image"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <ImagePlus className="h-4 w-4" /> Image
           </button>
           <button
             onClick={() => pick("video")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+            aria-label="Add video"
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
           >
             <Video className="h-4 w-4" /> Video
           </button>
+          {!location.pathname.startsWith("/community/") && (
+            <label className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground">
+              <Orbit className="h-4 w-4" />
+              <span className="hidden sm:inline">Orbit</span>
+              <select
+                aria-label="Post orbit"
+                value={selectedCommunity || ""}
+                onChange={(event) => setSelectedCommunity(event.target.value || null)}
+                className="absolute inset-0 cursor-pointer opacity-0"
+              >
+                <option value="">No Orbit</option>
+                {COMMUNITY_META.map((community) => <option key={community.slug} value={community.slug}>{community.name}</option>)}
+              </select>
+            </label>
+          )}
         </div>
         <button
           onClick={submit}
           disabled={posting || (!text.trim() && !file)}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-1.5 rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-brand/90 disabled:opacity-50 transition-colors"
         >
           {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           Post

@@ -13,69 +13,45 @@ import {
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useUnreadMessagesCount } from "@/hooks/useMessaging";
-
-interface LeftSidebarProps {
-  open: boolean;
-  onClose: () => void;
-}
+import { LogoMark } from "@/components/brand/LogoMark";
+import { Wordmark } from "@/components/brand/Wordmark";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Compass, label: "Explore", path: "/explore" },
   { icon: Building2, label: "Launchpad", path: "/startups" },
   { icon: Users, label: "Orbits", path: "/communities" },
-  { icon: Rocket, label: "Launch Calendar", path: "/missions" },
+  { icon: Rocket, label: "Launches", path: "/missions" },
   { icon: Radio, label: "Live", path: "/live" },
-  { icon: BookOpen, label: "Learning", path: "/learning" },
+  { icon: BookOpen, label: "Learn", path: "/learning" },
   { icon: Bookmark, label: "Hangar", path: "/bookmarks" },
   { icon: MessageSquare, label: "Messages", path: "/messages" },
   { icon: UserCircle, label: "Profile", path: "/profile" },
 ];
 
-const LeftSidebar = ({ open, onClose }: LeftSidebarProps) => {
+const LeftSidebar = () => {
   const unreadCount = useUnreadMessagesCount();
 
   return (
-    <>
-      {/* Mobile overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-
-      <aside
-        className={`fixed lg:sticky top-0 lg:top-14 left-0 z-50 lg:z-30 h-screen lg:h-[calc(100vh-3.5rem)] w-64 glass-panel-strong border-r border-glass-border flex flex-col py-4 transition-transform duration-300 ${
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-      >
-        {/* Mobile close */}
-        <button
-          onClick={onClose}
-          className="lg:hidden absolute top-4 right-3 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-
-        <nav className="flex-1 px-3 space-y-1 mt-2 lg:mt-0">
+    <aside className="sticky top-0 hidden h-dvh border-r border-border bg-background py-4 md:flex md:w-[72px] md:flex-col xl:w-[280px]">
+        <div className="flex items-center justify-center gap-2 px-4 pb-5 xl:justify-start"><LogoMark size={30} /><Wordmark className="hidden xl:block" /></div>
+        <nav aria-label="Primary" className="flex-1 space-y-1 px-2 xl:px-3">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
-              onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                `relative flex items-center justify-center gap-3 rounded-full px-3 py-2.5 text-sm font-medium transition-colors duration-200 xl:justify-start ${
                   isActive
-                    ? "bg-primary/10 text-primary glow-border"
-                    : "text-sidebar-foreground hover:bg-muted/50 hover:text-foreground"
+                    ? "bg-muted text-foreground before:absolute before:left-0 before:h-5 before:w-[3px] before:bg-brand"
+                    : "text-sidebar-foreground hover:bg-muted hover:text-foreground"
                 }`
               }
             >
               <item.icon className="h-5 w-5 shrink-0" />
-              <span>{item.label}</span>
+              <span className="hidden xl:inline">{item.label}</span>
               {item.path === "/messages" && unreadCount > 0 && (
-                <span className="ml-auto bg-primary text-primary-foreground font-bold rounded-full text-[10px] px-1.5 py-0.5 animate-pulse">
+                <span className="ml-auto rounded-full bg-brand px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
                   {unreadCount}
                 </span>
               )}
@@ -84,18 +60,8 @@ const LeftSidebar = ({ open, onClose }: LeftSidebarProps) => {
         </nav>
 
         {/* Bottom section */}
-        <div className="px-3 pt-4 border-t border-glass-border">
-          <div className="glass-panel p-3 text-center">
-            <p className="text-xs text-muted-foreground">
-              🚀 Galaxy Ground v1.0
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Explore the cosmos together
-            </p>
-          </div>
-        </div>
+        <div className="border-t border-border px-4 pt-4" />
       </aside>
-    </>
   );
 };
 

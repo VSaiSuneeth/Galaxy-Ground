@@ -1,58 +1,36 @@
-# Galaxy Ground Stabilization Report - 2026-10-20
+# Galaxy Ground Final Report
 
-## Scope and evidence
+Date: October 20, 2026
 
-This report records only work completed in the supplied directory. The directory has no `.git` metadata, so no branch or commit evidence is available. No migration, Edge Function, cron configuration, or change was deployed to the live Supabase project.
+## Verified completed work
 
-| Finding | Status | Evidence / change |
-| --- | --- | --- |
-| F1 Secrets in examples and scripts | Fixed locally; rotation needed | `.env.example` now uses placeholders, unused NVIDIA configuration was removed, live-mutation scripts require environment variables and explicit opt-in, and `npm run secrets:check` passes. |
-| F2 Profile badge privilege escalation | Migration ready; unverified live | `20261020010000_security_authorization_hardening.sql` adds an invoker guard trigger and a profile `WITH CHECK` policy. |
-| F3 Conflicting admin systems | Migration ready; unverified live | The new migration rewrites known badge-array admin policies to `has_role`. |
-| F4 Open internal functions | Fixed locally; deployment/test needed | `_shared/auth.ts` protects the five internal functions with cron-secret or admin-JWT authorization; wildcard CORS was removed for them. |
-| F5 Repo/live database drift | Confirmed; needs human | `DB_DRIFT_REPORT.md` records regenerated-type evidence and requires a CLI schema pull. |
-| F6 Invalid migration filename | Not yet fixed | Renaming requires matching live migration history before it is safe. |
-| F7 SECURITY DEFINER search paths | Migration ready; unverified live | The new migration applies a fixed `public` search path to existing public SECURITY DEFINER functions. |
-| F8 Job reliability and observability | Partly fixed | Missing launch/topic/digest provider configuration now returns honest `503 not_configured`; `sync_jobs` persistence and live reminders remain incomplete. |
-| F9 Fallback-data honesty | Not yet fixed | Requires a focused UI pass and production flag verification. |
-| F10 Server-side learning progress | Not yet fixed | Requires a schema-confirmed implementation and sign-in migration test. |
-| F11 API gateway rate-limit race | Not yet fixed | Requires an atomic database function or transaction-backed redesign. |
-| F12 Hard-coded test credentials | Fixed locally | Legacy mutation scripts now require injected credentials and `E2E_ALLOW_MUTATIONS=true`. |
-| F13 Dependency conflict | Fixed locally | Corrected Radix package metadata and compatible `date-fns@^3.6.0`; `npm install` and `npm ci` pass. |
-| F14 Repo hygiene | Partly fixed | Test artifacts are ignored; broader document consolidation and tracked-artifact cleanup remain. |
-| F15 RLS/performance live audit | Needs human/live test project | No live policy, index, or RLS suite result is claimed. |
+- Repaired the Auth page JSX that prevented Vite from starting.
+- Recovered the Windows dependency installation after locked Node/esbuild processes prevented npm from rebuilding `node_modules`.
+- Corrected the connection-request sender relationship hint in `useMessaging.ts` to the live constraint name: `connection_requests_sender_id_fkey`. The column remains `requester_id`.
+- Updated the feed typing helper so `post_stats` is treated as a live database view, not a table.
+- Ran `npm ci`, `npm run build`, and `npm test` after the clean recovery. Build passed and all 15 tests in 7 test files passed.
+- Ran `npm run secrets:check`; it passed.
+- Ran `npm audit --omit=dev`. It reports 9 production dependency vulnerabilities (5 high, 4 moderate). Every npm-proposed top-level remediation is a major upgrade (Tailwind 4 or React Router 7), so none was applied automatically.
 
-## New migration to review and apply
+## Not completed
 
-1. `20261020010000_security_authorization_hardening.sql`: profile badge guard, admin-policy alignment, and function search paths. Rollback note is at the top of the migration. Apply only after a backup and an RLS test run against a non-production database.
+- `npx tsc --noEmit -p tsconfig.app.json` still fails. The remaining errors are largely untyped Supabase embedded-query results (`unknown`), an invalid icon import, and a React Query result-union design issue.
+- `npm run lint` still fails on existing explicit-`any` values and a small set of hook warnings.
+- The requested route-by-route browser sweep and signed-in workflow verification are not complete.
+- The requested `docs/DB_SCHEMA_FACTS.md` is not present in this checkout. The available generated `src/integrations/supabase/types.ts` was used as the source of truth where possible.
 
-## Environment variables added or documented
+## Required owner input/actions
 
-`E2E_ALLOW_MUTATIONS`, `E2E_USER_A_EMAIL`, `E2E_USER_A_PASSWORD`, `E2E_USER_B_EMAIL`, `E2E_USER_B_PASSWORD`, `E2E_USER_C_EMAIL`, `E2E_USER_C_PASSWORD`, `E2E_ADMIN_EMAIL`, `E2E_ADMIN_PASSWORD`, `CRON_SECRET`, `SITE_ORIGIN`, `OPENAI_API_KEY`, `FIRECRAWL_API_KEY`, `RESEND_API_KEY`, `EMAIL_FROM_ADDRESS`, `NASA_API_KEY`, `LAUNCHES_API_URL`, `LAUNCHES_API_KEY`, `TOPICS_API_URL`, `TOPICS_API_KEY`.
+1. Add the referenced `docs/DB_SCHEMA_FACTS.md` to this checkout, or explicitly authorize a schema pull using owner-managed Supabase credentials. This is needed to safely reconcile all query contracts without guessing.
+2. Approve a planned Tailwind 3-to-4 and React Router 6-to-7 migration before applying the audit remediations. They are breaking changes.
+3. Provide a non-production authenticated test account or approved mocking strategy before signed-in flow verification. No production data was changed.
 
-## Test results
+## Commands verified
 
-| Check | Before | After |
-| --- | --- | --- |
-| `npm install` | Failed: peer dependency conflict | Passed |
-| `npm ci` | Not runnable | Passed |
-| `npm run build` | Passed | Passed |
-| `npm test` | 7 files, 15 tests passed | 7 files, 15 tests passed |
-| `npm run secrets:check` | Not present | Passed |
-| `npx tsc --noEmit -p tsconfig.app.json` | Failed from stale local types | Still blocked by real frontend/live-schema mismatches exposed by regenerated types |
-| `npm run lint` | Failed | Still blocked by existing type-safety lint backlog |
-
-## Human-only actions still pending
-
-1. Rotate exposed OpenRouter, NVIDIA, and any other keys found in provider dashboards.
-2. Set and store the Edge Function secrets, including `CRON_SECRET`, in Supabase/Vault.
-3. Back up production, reconcile schema drift, test the migration on a database copy, then deploy it.
-4. Configure SMTP, cron jobs, monitoring, and alerts.
-5. Run RLS, Edge Function authorization, and authenticated browser tests against dedicated accounts.
-
-## Known deployment blockers
-
-- The live schema and local migrations are not reproducible from this repository copy.
-- Strict TypeScript identifies real UI assumptions that do not match the regenerated live schema.
-- No live RLS or Edge Function invocation verification has been performed.
-- No git repository was supplied, so the requested phase branches and commits cannot be created.
+```powershell
+Set-Location -LiteralPath "C:\Users\saisu\OneDrive\Pictures\course\galaxy-ground-space-hub-main(2)\galaxy-ground-space-hub-main(d2)"
+npm ci
+npm run build
+npm test
+npm run secrets:check
+```

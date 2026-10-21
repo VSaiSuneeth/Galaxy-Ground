@@ -1,15 +1,30 @@
-# Commands Requiring a Clear Node Tooling State
+# Restore a clean dependency tree
 
-`npm ci` currently cannot complete because another process holds `node_modules/@esbuild/win32-x64/esbuild.exe` open. Do not delete or unlock it while an active developer server may be using it.
-
-After stopping the process that owns the project esbuild executable, run these commands from the project root in order:
+`node_modules` is locked by another Windows process or sync service. Close any terminals, editors, and Explorer windows open in this project, pause OneDrive for the project folder, then run the following in an elevated PowerShell window:
 
 ```powershell
+Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force
+cmd /c rmdir /s /q "C:\Users\saisu\OneDrive\Pictures\course\galaxy-ground-space-hub-main(2)\galaxy-ground-space-hub-main(d2)\node_modules"
+cd "C:\Users\saisu\OneDrive\Pictures\course\galaxy-ground-space-hub-main(2)\galaxy-ground-space-hub-main(d2)"
 npm ci
-npm run build
-npm test
-npx tsc --noEmit -p tsconfig.app.json
-npm run lint
+npm run dev
 ```
 
-The commands are local only. Do not run browser or authenticated tests against production data.
+Open the local URL printed by Vite, normally `http://localhost:5173`.
+
+For a production-style local check, stop the development server and run:
+
+```powershell
+npm run build
+npm run preview
+```
+
+Run the full local quality gate before deploying:
+
+```powershell
+npx tsc --noEmit -p tsconfig.app.json
+npm run lint
+npm test
+```
+
+If Windows still reports a non-empty directory, restart Windows, repeat the commands before opening an editor, and keep the project outside a cloud-synced directory while installing dependencies.

@@ -8,7 +8,7 @@ import CreatePost from "@/components/CreatePost";
 import PostCard from "@/components/PostCard";
 import { usePosts } from "@/hooks/usePosts";
 import { useQueryClient } from "@tanstack/react-query";
-import { avatarEmoji } from "@/lib/post-utils";
+import { UserAvatar } from "@/components/brand/UserAvatar";
 import { useOwnProfile, useProfileStats } from "@/hooks/useProfile";
 import { PageError, PageLoading } from "@/components/PageState";
 import type { ProfileRow } from "@/lib/profile-utils";
@@ -113,13 +113,7 @@ const ProfilePage = () => {
     <div className="max-w-2xl mx-auto space-y-4">
       <div className="glass-panel p-6">
         <div className="flex items-start gap-4">
-          <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center text-4xl shrink-0 overflow-hidden">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              avatarEmoji(user.id)
-            )}
-          </div>
+          <UserAvatar src={profile?.avatar_url} seed={user.id} label={profile?.display_name} size={88} />
           <div className="flex-1 min-w-0">
             {editing ? (
               <div className="space-y-2">

@@ -32,6 +32,19 @@ const AdminReadinessPage = () => {
       return { available: false, message: error.message || "get_feed_page RPC is not available yet." };
     },
   });
+  const syncJobs = useQuery({
+    queryKey: ["readiness", "sync-jobs"],
+    enabled: !!user && role.data === true,
+    retry: false,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("sync_jobs")
+        .select("job_name, last_run_at, last_success_at, last_error, items_processed, status")
+        .order("job_name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
 
   if (loading || role.isLoading) {
     return (
@@ -92,6 +105,14 @@ const AdminReadinessPage = () => {
       state: rpcProbe.data?.available ? "ready" : "warning",
       detail: rpcProbe.data?.message || "Waiting for get_feed_page RPC backend rollout.",
     },
+    {
+      id: "jobs",
+      label: "Scheduled jobs",
+      state: syncJobs.isError ? "warning" : (syncJobs.data ?? []).some((job) => job.status === "error") ? "warning" : "ready",
+      detail: syncJobs.isError
+        ? "Unable to read sync job status."
+        : `${syncJobs.data?.length ?? 0} jobs tracked; ${(syncJobs.data ?? []).filter((job) => job.status === "ok").length} reporting success.`,
+    },
   ];
   const summary = getReadinessSummary(checks);
 
@@ -141,6 +162,11 @@ const AdminReadinessPage = () => {
             `Themed posts: ${formatCount(counts.themed_posts)}`,
             `Profiles: ${formatCount(counts.profiles)}`,
           ]}
+        />
+        <ReadinessPanel
+          icon={<Activity className="h-5 w-5" />}
+          title="Job status"
+          items={(syncJobs.data ?? []).map((job) => `${job.job_name}: ${job.status ?? "unknown"}${job.last_success_at ? ` (${new Date(job.last_success_at).toLocaleString()})` : ""}`)}
         />
         <ReadinessPanel
           icon={<Bell className="h-5 w-5" />}

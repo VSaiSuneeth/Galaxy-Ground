@@ -36,7 +36,7 @@ const MediaLightbox = ({ src, type, open, onClose, alt }: Props) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
           onClick={onClose}
         >
           {/* Top toolbar */}
@@ -47,6 +47,7 @@ const MediaLightbox = ({ src, type, open, onClose, alt }: Props) => {
                   onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.max(z - 0.25, 0.5)); }}
                   className="h-10 w-10 rounded-full bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-foreground transition-colors"
                   title="Zoom out"
+                  aria-label="Zoom out"
                 >
                   <ZoomOut className="h-5 w-5" />
                 </button>
@@ -54,6 +55,7 @@ const MediaLightbox = ({ src, type, open, onClose, alt }: Props) => {
                   onClick={(e) => { e.stopPropagation(); setZoom(1); }}
                   className="h-10 w-10 rounded-full bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-foreground transition-colors"
                   title="Reset zoom"
+                  aria-label="Reset zoom"
                 >
                   <RotateCcw className="h-5 w-5" />
                 </button>
@@ -61,6 +63,7 @@ const MediaLightbox = ({ src, type, open, onClose, alt }: Props) => {
                   onClick={(e) => { e.stopPropagation(); setZoom((z) => Math.min(z + 0.25, 4)); }}
                   className="h-10 w-10 rounded-full bg-muted/40 hover:bg-muted/60 flex items-center justify-center text-foreground transition-colors"
                   title="Zoom in"
+                  aria-label="Zoom in"
                 >
                   <ZoomIn className="h-5 w-5" />
                 </button>
@@ -70,6 +73,7 @@ const MediaLightbox = ({ src, type, open, onClose, alt }: Props) => {
               onClick={onClose}
               className="h-10 w-10 rounded-full bg-muted/40 hover:bg-destructive/40 flex items-center justify-center text-foreground transition-colors"
               title="Close"
+              aria-label="Close"
             >
               <X className="h-5 w-5" />
             </button>
@@ -87,14 +91,14 @@ const MediaLightbox = ({ src, type, open, onClose, alt }: Props) => {
                 src={src}
                 alt={alt || "Media"}
                 style={{ transform: `scale(${zoom})`, transition: "transform 0.2s" }}
-                className="max-w-[95vw] max-h-[90vh] object-contain rounded-lg shadow-2xl origin-center"
+                className="max-h-[90vh] max-w-[95vw] origin-center rounded-lg object-contain"
               />
             ) : (
               <video
                 src={src}
                 controls
                 autoPlay
-                className="max-w-[95vw] max-h-[90vh] rounded-lg shadow-2xl"
+                className="max-h-[90vh] max-w-[95vw] rounded-lg"
               />
             )}
           </motion.div>

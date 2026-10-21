@@ -1135,6 +1135,45 @@ export type Database = {
           },
         ]
       }
+      moderation_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           account_handle: string | null
@@ -1552,33 +1591,33 @@ export type Database = {
       sync_jobs: {
         Row: {
           created_at: string | null
-          error_message: string | null
           id: string
           items_processed: number | null
           job_name: string
           last_run_at: string | null
-          last_status: string | null
-          updated_at: string | null
+          last_success_at: string | null
+          last_error: string | null
+          status: string | null
         }
         Insert: {
           created_at?: string | null
-          error_message?: string | null
           id?: string
           items_processed?: number | null
           job_name: string
           last_run_at?: string | null
-          last_status?: string | null
-          updated_at?: string | null
+          last_success_at?: string | null
+          last_error?: string | null
+          status?: string | null
         }
         Update: {
           created_at?: string | null
-          error_message?: string | null
           id?: string
           items_processed?: number | null
           job_name?: string
           last_run_at?: string | null
-          last_status?: string | null
-          updated_at?: string | null
+          last_success_at?: string | null
+          last_error?: string | null
+          status?: string | null
         }
         Relationships: []
       }

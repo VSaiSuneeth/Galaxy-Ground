@@ -1,39 +1,27 @@
-import { User, Menu, LogOut, LogIn, MessageSquare } from "lucide-react";
+import { User, LogOut, LogIn, MessageSquare } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUnreadMessagesCount } from "@/hooks/useMessaging";
 import { useLiveStatus } from "@/hooks/useLiveStatus";
-import logo from "@/assets/logo.png";
+import { LogoMark } from "@/components/brand/LogoMark";
+import { Wordmark } from "@/components/brand/Wordmark";
 import SearchBar from "@/components/layout/SearchBar";
 import NotificationsBell from "@/components/NotificationsBell";
 
-interface TopNavProps {
-  onMenuToggle?: () => void;
-}
-
-const TopNav = ({ onMenuToggle }: TopNavProps) => {
+const TopNav = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const unreadCount = useUnreadMessagesCount();
   const { data: liveStatus, isLoading, error } = useLiveStatus();
 
   return (
-    <header className="sticky top-0 z-50 glass-panel-strong border-b border-glass-border px-4 lg:px-6 h-14 flex items-center gap-4">
-      <button
-        onClick={onMenuToggle}
-        className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-
+    <header className="sticky top-0 z-50 h-14 border-b border-border bg-background px-4 lg:hidden flex items-center gap-3">
       <Link to="/" className="flex items-center gap-2 shrink-0">
-        <img src={logo} alt="Galaxy Ground" className="h-8 w-8" />
-        <span className="text-lg font-bold glow-text text-foreground hidden sm:block">
-          Galaxy Ground
-        </span>
+        <LogoMark size={28} />
+        <Wordmark />
       </Link>
 
-      <div className="flex-1 min-w-0 max-w-xl mx-auto">
+      <div className="hidden flex-1 min-w-0 max-w-xl mx-auto sm:block">
         <SearchBar />
       </div>
 
@@ -41,8 +29,8 @@ const TopNav = ({ onMenuToggle }: TopNavProps) => {
         {/* Live Indicator */}
         {!isLoading && !error && liveStatus?.is_something_live && (
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-            <span className="text-xs text-red-500 font-medium">LIVE</span>
+            <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+            <span className="telemetry text-destructive">Live</span>
           </div>
         )}
 
@@ -52,25 +40,28 @@ const TopNav = ({ onMenuToggle }: TopNavProps) => {
             <Link
               to="/messages"
               title="Messages"
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors relative"
+              aria-label="Messages"
+              className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <MessageSquare className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 h-4 min-w-[16px] rounded-full bg-primary text-[10px] text-primary-foreground font-bold flex items-center justify-center px-1 shadow-[0_0_6px_rgba(34,211,238,0.4)] animate-pulse">
+                <span className="absolute top-1 right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-primary-foreground">
                   {unreadCount}
                 </span>
               )}
             </Link>
             <Link
               to="/profile"
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              aria-label="Profile"
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <User className="h-5 w-5" />
             </Link>
             <button
               onClick={signOut}
               title="Sign out"
-              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              aria-label="Sign out"
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <LogOut className="h-5 w-5" />
             </button>
@@ -78,7 +69,7 @@ const TopNav = ({ onMenuToggle }: TopNavProps) => {
         ) : (
           <button
             onClick={() => navigate("/auth")}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-1.5 rounded-full bg-brand px-3 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-brand/90 transition-colors"
           >
             <LogIn className="h-4 w-4" />
             Sign in

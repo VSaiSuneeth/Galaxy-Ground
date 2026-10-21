@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { avatarEmoji } from "@/lib/post-utils";
+import { UserAvatar } from "@/components/brand/UserAvatar";
 import { toast } from "sonner";
 import {
   MessageSquare,
@@ -142,12 +142,8 @@ export default function MessagesPage() {
                       : "bg-muted/10 border-glass-border hover:bg-muted/20 text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center text-lg shrink-0 relative overflow-hidden">
-                    {t.other_participant?.avatar_url ? (
-                      <img src={t.other_participant.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      avatarEmoji(t.other_participant?.user_id || "")
-                    )}
+                  <div className="relative shrink-0">
+                    <UserAvatar src={t.other_participant?.avatar_url} seed={t.other_participant?.user_id} label={t.other_participant?.display_name} size={48} />
                     {/* Online status indicator */}
                     {t.other_participant?.show_online_status && isOnline(t.other_participant?.last_seen_at) && (
                       <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border border-background shadow-sm" />
@@ -253,8 +249,9 @@ export default function MessagesPage() {
                   toast.success("Conversation reported. Administrators will audit.");
                   setReportReason("");
                   setReportModalOpen(false);
-                } catch (e: any) {
-                  toast.error(e.message || "Failed to submit report.");
+                } catch (error: unknown) {
+                  const message = error instanceof Error ? error.message : "Failed to submit report.";
+                  toast.error(message);
                 }
               }}
               className="bg-rose-500 hover:bg-rose-600 text-white font-semibold"
@@ -338,13 +335,7 @@ function InboxTabsArea({
             {requests.map((req) => (
               <div key={req.id} className="glass-panel p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-glass-border">
                 <div className="flex items-center gap-3">
-                  <div className="h-11 w-11 rounded-full bg-muted flex items-center justify-center text-xl shrink-0 overflow-hidden">
-                    {req.sender_profile?.avatar_url ? (
-                      <img src={req.sender_profile.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      avatarEmoji(req.requester_id)
-                    )}
-                  </div>
+                  <UserAvatar src={req.sender_profile?.avatar_url} seed={req.requester_id} label={req.sender_profile?.display_name} size={48} />
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h4 className="text-sm font-bold text-foreground">
@@ -410,13 +401,7 @@ function InboxTabsArea({
           {sent.map((req) => (
             <div key={req.id} className="glass-panel p-3.5 flex items-center justify-between border border-glass-border">
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-lg shrink-0 overflow-hidden">
-                  {req.recipient_profile?.avatar_url ? (
-                    <img src={req.recipient_profile.avatar_url} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    avatarEmoji(req.recipient_id)
-                  )}
-                </div>
+                <UserAvatar src={req.recipient_profile?.avatar_url} seed={req.recipient_id} label={req.recipient_profile?.display_name} size={44} />
                 <div>
                   <h4 className="text-sm font-bold text-foreground">
                     {req.recipient_profile?.display_name || req.recipient_profile?.username || "Explorer"}
@@ -520,13 +505,7 @@ function ChatThreadWindow({
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center text-lg shrink-0 overflow-hidden">
-            {thread.other_participant?.avatar_url ? (
-              <img src={thread.other_participant.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              avatarEmoji(thread.other_participant?.user_id || "")
-            )}
-          </div>
+          <UserAvatar src={thread.other_participant?.avatar_url} seed={thread.other_participant?.user_id} label={thread.other_participant?.display_name} size={44} />
           <div>
             <h3 className="text-sm font-bold text-foreground">
               {thread.other_participant?.display_name || thread.other_participant?.username || "Space Explorer"}

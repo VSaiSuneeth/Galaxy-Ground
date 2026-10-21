@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
-import { Building2, MapPin, Loader2, ExternalLink } from "lucide-react";
+import { MapPin, Loader2, ExternalLink } from "lucide-react";
 import { useStartups } from "@/hooks/useStartups";
 import { useMemo, useState } from "react";
 import { asArray } from "@/lib/safe-data";
+import PageHeader from "@/components/kit/PageHeader";
+import { Patch } from "@/components/brand/Patch";
 
 const CATEGORIES = [
   "All",
@@ -22,39 +24,27 @@ const StartupsPage = () => {
   }, [startupList, active]);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <header className="glass-panel p-6">
-        <div className="flex items-center gap-3">
-          <div className="h-11 w-11 rounded-xl bg-primary/15 flex items-center justify-center">
-            <Building2 className="h-6 w-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground glow-text">Space Startups</h1>
-            <p className="text-sm text-muted-foreground">
-              Live updates from the new-space ecosystem
-            </p>
-          </div>
-        </div>
+    <div className="mx-auto max-w-5xl space-y-6 animate-enter">
+      <PageHeader title="Launchpad" eyebrow="New-space companies" subtitle="Live updates from the companies building the next decade in orbit." />
 
-        <div className="flex flex-wrap gap-2 mt-5">
+        <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => (
             <button
               key={c}
               onClick={() => setActive(c)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              className={`rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors ${
                 active === c
-                  ? "bg-primary text-primary-foreground glow-border"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                  ? "border-primary bg-accent text-primary"
+                  : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               {c}
             </button>
           ))}
         </div>
-      </header>
 
       {isLoading ? (
-        <div className="glass-panel p-10 flex justify-center">
+        <div className="flex justify-center py-10">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : (
@@ -63,17 +53,15 @@ const StartupsPage = () => {
             <Link
               key={s.id}
               to={`/startup/${s.slug}`}
-              className="glass-panel p-5 group hover:ring-1 hover:ring-primary/40 transition-all"
+            className="group rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary"
             >
               <div className="flex items-start gap-3">
-                <div className="h-11 w-11 rounded-lg bg-secondary/20 flex items-center justify-center shrink-0">
-                  <Building2 className="h-5 w-5 text-secondary" />
-                </div>
+                {s.logo_url ? <img src={s.logo_url} alt={s.name} className="h-11 w-11 shrink-0 rounded-[28%] object-cover" /> : <Patch seed={s.id} label={s.name} size={44} shape="squircle" />}
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                     {s.name}
                   </h3>
-                  <p className="text-[11px] uppercase tracking-wider text-primary/80 mt-0.5">
+                  <p className="telemetry mt-0.5 text-primary">
                     {s.category}
                   </p>
                 </div>

@@ -31,7 +31,7 @@ export function useUserBadges(userId?: string) {
           user_id,
           badge_id,
           awarded_at,
-          badge:badge_id (
+          badge:badges!profile_badge_awards_badge_id_fkey (
             id,
             name,
             description,
@@ -43,7 +43,23 @@ export function useUserBadges(userId?: string) {
         .order("awarded_at", { ascending: false });
 
       if (error) throw error;
-      return (data as UserBadge[]) || [];
+      return (data ?? []).flatMap((award) => {
+        const badge = Array.isArray(award.badge) ? award.badge[0] : award.badge;
+        if (!badge) return [];
+        return [{
+          id: award.id,
+          user_id: award.user_id,
+          badge_id: award.badge_id ?? "",
+          awarded_at: award.awarded_at ?? "",
+          badge: {
+            id: badge.id,
+            name: badge.name,
+            description: badge.description,
+            image_url: badge.image_url,
+            criteria: badge.criteria,
+          },
+        }];
+      });
     },
   });
 }

@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePosts } from "@/hooks/usePosts";
 import PostCard from "@/components/PostCard";
 import { toast } from "sonner";
-import { avatarEmoji } from "@/lib/post-utils";
+import { UserAvatar } from "@/components/brand/UserAvatar";
 import { useQueryClient } from "@tanstack/react-query";
 import { useProfileByUserId, useProfileStats, useIsFollowingUser } from "@/hooks/useProfile";
 import { PageError, PageLoading } from "@/components/PageState";
@@ -125,13 +125,7 @@ const UserProfilePage = () => {
 
       <div className="glass-panel p-6">
         <div className="flex items-start gap-4">
-          <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center text-4xl shrink-0 overflow-hidden">
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
-            ) : (
-              avatarEmoji(profile.user_id)
-            )}
-          </div>
+          <UserAvatar src={profile.avatar_url} seed={profile.user_id} label={profile.display_name} size={88} />
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-bold text-foreground">
               {profile.display_name || profile.username || "Space Explorer"}
