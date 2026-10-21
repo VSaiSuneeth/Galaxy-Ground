@@ -11,7 +11,19 @@ export default defineConfig(() => ({
       overlay: false,
     },
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "google-site-verification",
+      transformIndexHtml(html) {
+        const verification = process.env.VITE_GOOGLE_SITE_VERIFICATION;
+        const tag = verification
+          ? `<meta name="google-site-verification" content="${verification.replace(/&/g, "&amp;").replace(/"/g, "&quot;")}" />`
+          : "";
+        return html.replace("%GOOGLE_SITE_VERIFICATION%", tag);
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

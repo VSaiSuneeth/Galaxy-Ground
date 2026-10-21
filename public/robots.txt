@@ -1,7 +1,7 @@
 # Galaxy Ground
-# https://galaxyground.app/
+# https://galaxy-ground-space-hub-main-d2.vercel.app/
 
 User-agent: *
 Allow: /
 
-Sitemap: https://galaxyground.app/sitemap.xml
+Sitemap: https://galaxy-ground-space-hub-main-d2.vercel.app/sitemap.xml

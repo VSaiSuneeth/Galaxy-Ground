@@ -11,8 +11,8 @@ describe("normalizeFeedPost", () => {
       user_has_liked: true,
       user_has_bookmarked: true,
       reaction_type: "rocket",
-      likes_count: "5",
-      comments_count: "2",
+      likes_count: 5,
+      comments_count: 2,
     });
 
     expect(result.user_has_liked).toBe(true);

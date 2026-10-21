@@ -10,6 +10,8 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { PageLoading } from "@/components/PageState";
 import { QUERY_DEFAULTS } from "@/lib/query-config";
 import { ThemeProvider } from "next-themes";
+import ConsentBanner from "@/components/ConsentBanner";
+import RouteMeta from "@/components/RouteMeta";
 
 // Eager-loaded pages (critical path)
 import HomeFeed from "@/pages/HomeFeed";
@@ -67,6 +69,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter future={{ v7_relativeSplatPath: true }}>
         <AuthProvider>
+          <RouteMeta />
           <Routes>
             <Route
               path="/auth"
@@ -398,6 +401,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<ErrorBoundary label="NotFound"><Suspense fallback={<PageLoader />}><NotFound /></Suspense></ErrorBoundary>} />
           </Routes>
+          <ConsentBanner />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

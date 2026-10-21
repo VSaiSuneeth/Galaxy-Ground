@@ -120,7 +120,7 @@ const ContentQualityPanel = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("posts")
-        .select("id, content, created_at, profiles!inner(username)")
+        .select("id, user_id, content, created_at")
         .order("created_at", { ascending: false })
         .limit(50);
       return data || [];
@@ -147,7 +147,7 @@ const ContentQualityPanel = () => {
               <div key={post.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">@{post.profiles?.username}</p>
+                    <p className="text-sm font-medium">@{post.user_id.slice(0, 8)}</p>
                     <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{post.content}</p>
                     <p className="text-[10px] text-muted-foreground mt-1">{new Date(post.created_at).toLocaleString()}</p>
                   </div>
@@ -228,7 +228,7 @@ const LiveEventsPanel = () => {
       const { data } = await supabase
         .from("live_events")
         .select("*")
-        .order("scheduled_at", { ascending: false })
+        .order("start_time", { ascending: false })
         .limit(20);
       return data || [];
     },
@@ -259,10 +259,10 @@ const LiveEventsPanel = () => {
                   <div className="flex-1">
                     <p className="text-sm font-medium">{event.title}</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {event.scheduled_at ? new Date(event.scheduled_at).toLocaleString() : "No date"}
+                      {new Date(event.start_time).toLocaleString()}
                     </p>
-                    <Badge variant={event.status === "live" ? "default" : "secondary"} className="mt-2">
-                      {event.status}
+                    <Badge variant={event.is_complete ? "secondary" : "default"} className="mt-2">
+                      {event.is_complete ? "Complete" : "Scheduled"}
                     </Badge>
                   </div>
                   <div className="flex gap-2">
@@ -323,8 +323,8 @@ const SpotlightPanel = () => {
               <div key={item.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{item.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+                    <p className="text-sm font-medium">{item.headline}</p>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.summary}</p>
                     <Badge variant={item.is_active ? "default" : "secondary"} className="mt-2">
                       {item.is_active ? "Active" : "Inactive"}
                     </Badge>
@@ -450,8 +450,8 @@ const VendorsPanel = () => {
               <div key={vendor.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{vendor.name}</p>
-                    <p className="text-xs text-muted-foreground">{vendor.category}</p>
+                    <p className="text-sm font-medium">{vendor.trade_name || vendor.legal_name}</p>
+                    <p className="text-xs text-muted-foreground">{vendor.category_tags.join(", ")}</p>
                     <Badge variant={vendor.is_verified ? "default" : "secondary"} className="mt-2">
                       {vendor.is_verified ? "Verified" : "Pending"}
                     </Badge>

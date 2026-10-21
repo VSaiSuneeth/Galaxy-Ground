@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://galaxyground.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>https://galaxyground.app/explore</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://galaxyground.app/learning</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://galaxyground.app/missions</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>https://galaxyground.app/startups</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://galaxyground.app/communities</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://galaxyground.app/privacy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://galaxyground.app/terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/explore</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/learning</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/missions</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/startups</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/communities</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/privacy</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://galaxy-ground-space-hub-main-d2.vercel.app/terms</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
 </urlset>
