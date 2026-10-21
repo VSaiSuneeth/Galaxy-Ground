@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
 
 export type FollowTarget = "user" | "startup" | "themed";
 
@@ -24,24 +25,22 @@ export function useFollow({ targetType, targetId }: Args) {
 
   const refresh = useCallback(async () => {
     if (!targetId) return;
-    const [countRes, mineRes] = await Promise.all([
-      supabase
-        .from("follows")
-        .select("id", { count: "exact", head: true })
-        .eq("target_type", targetType)
-        .eq("target_id", targetId),
-      user
-        ? supabase
-            .from("follows")
-            .select("id")
-            .eq("follower_id", user.id)
-            .eq("target_type", targetType)
-            .eq("target_id", targetId)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-    ]);
+    const countRes = await supabase
+      .from("follows")
+      .select("id", { count: "exact", head: true })
+      .eq("target_type", targetType)
+      .eq("target_id", targetId);
+    const mineRes = user
+      ? await supabase
+          .from("follows")
+          .select("id")
+          .eq("follower_id", user.id)
+          .eq("target_type", targetType)
+          .eq("target_id", targetId)
+          .maybeSingle()
+      : null;
     setFollowers(countRes.count || 0);
-    setIsFollowing(!!(mineRes as any).data);
+    setIsFollowing(!!mineRes?.data);
     setLoaded(true);
   }, [targetType, targetId, user]);
 
@@ -69,7 +68,7 @@ export function useFollow({ targetType, targetId }: Args) {
         setFollowers((n) => Math.max(0, n - 1));
       }
     } else {
-      const payload: any = {
+      const payload: Database["public"]["Tables"]["follows"]["Insert"] = {
         follower_id: user.id,
         target_type: targetType,
         target_id: targetId,

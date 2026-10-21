@@ -19,7 +19,7 @@ export function useProfileByUserId(userId?: string) {
     queryFn: async (): Promise<ProfileRow | null> => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url, bio, location, website, interests, created_at")
+        .select("user_id, username, display_name, avatar_url, bio, location, website, interests, badges, weekly_digest_opt_in, created_at")
         .eq("user_id", userId!)
         .maybeSingle();
       if (error) {

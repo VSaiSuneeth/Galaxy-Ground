@@ -6,6 +6,7 @@ import { useSidebarStats } from "@/hooks/useSidebarStats";
 import { useTrendingHashtags } from "@/hooks/useTrendingHashtags";
 import { useWhoToFollow } from "@/hooks/useWhoToFollow";
 import { useFeaturedContent } from "@/hooks/useFeaturedContent";
+import type { IntelOpenRole } from "@/hooks/useIntelDashboard";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { asArray } from "@/lib/safe-data";
@@ -48,7 +49,7 @@ const RightSidebar = () => {
   const topics = hasTrending ? asArray(trending) : allowFallbackData ? fallbackTrending : [];
   const popularCommunities = asArray(stats?.communities).slice(0, 4);
   const topStartups = asArray(stats?.topStartups);
-  const [followedRoles, setFollowedRoles] = useState<any[]>([]);
+  const [followedRoles, setFollowedRoles] = useState<IntelOpenRole[]>([]);
 
   // Filter for India in Space spotlight content
   const indiaInSpace = featuredContent.find(
@@ -66,7 +67,7 @@ const RightSidebar = () => {
       .eq("follower_id", user.id)
       .eq("target_type", "startup")
       .then(({ data: follows }) => {
-        const startupIds = (follows || []).map((f: any) => f.target_id).filter(Boolean) as string[];
+        const startupIds = (follows ?? []).flatMap((follow) => follow.target_id ? [follow.target_id] : []);
         if (startupIds.length === 0) { setFollowedRoles([]); return; }
         supabase
           .from("startup_roles")
@@ -76,10 +77,18 @@ const RightSidebar = () => {
           .or("expires_at.is.null,expires_at.gt." + new Date().toISOString())
           .order("posted_at", { ascending: false })
           .limit(3)
-          .then(({ data }) => setFollowedRoles(data || []))
-          .catch(() => setFollowedRoles([]));
-      })
-      .catch(() => setFollowedRoles([]));
+          .then(({ data }) => setFollowedRoles((data ?? []).flatMap((role) => {
+            const startup = Array.isArray(role.startups) ? role.startups[0] : role.startups;
+            if (!startup) return [];
+            return [{
+              id: role.id,
+              title: role.title,
+              role_type: role.role_type,
+              startup_id: role.startup_id,
+              startups: { slug: startup.slug, name: startup.name, logo_url: startup.logo_url },
+            }];
+          })), () => setFollowedRoles([]));
+      }, () => setFollowedRoles([]));
   }, [user]);
 
   return (
@@ -184,7 +193,7 @@ const RightSidebar = () => {
             Roles at startups you follow
           </h3>
           <ul className="space-y-2">
-            {followedRoles.map((role: any) => (
+            {followedRoles.map((role) => (
               <li key={role.id}>
                 <Link
                   to={`/startup/${role.startups?.slug || ""}#open-roles`}

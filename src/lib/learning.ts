@@ -93,12 +93,13 @@ export function toggleLearningProgressItem(
 export function parseLearningProgress(raw: string | null): LearningProgressState {
   if (!raw) return {};
   try {
-    const parsed = JSON.parse(raw);
+    const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
 
+    const record = parsed as Record<string, unknown>;
     return Object.fromEntries(
-      Object.entries(parsed)
-        .filter(([slug, items]) => typeof slug === "string" && Array.isArray(items))
+      Object.entries(record)
+        .filter((entry): entry is [string, unknown[]] => Array.isArray(entry[1]))
         .map(([slug, items]) => [slug, items.filter((item): item is string => typeof item === "string")]),
     );
   } catch {

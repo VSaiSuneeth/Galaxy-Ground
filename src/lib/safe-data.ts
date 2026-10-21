@@ -1,8 +1,10 @@
 import type { FeedPost } from "@/types/feed";
 
-/** Coerce any value to a safe array (never undefined). */
+/** Coerce a possibly absent array to a safe array (never undefined). */
+export function asArray<T>(value: readonly T[] | null | undefined): T[];
+export function asArray<T = never>(value: unknown): T[];
 export function asArray<T>(value: unknown): T[] {
-  if (Array.isArray(value)) return value;
+  if (Array.isArray(value)) return value.filter((item): item is T => true);
   if (value == null) return [];
   console.warn("[Galaxy Ground] Expected array, got:", typeof value, value);
   return [];

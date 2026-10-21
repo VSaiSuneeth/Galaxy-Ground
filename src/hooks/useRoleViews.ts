@@ -38,12 +38,12 @@ export function useRoleViewTracking(roleId: string | undefined) {
     markFired();
     const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     // Fire-and-forget — silenty ignore errors
-    supabase.from("role_views").insert({
+    void supabase.from("role_views").insert({
       role_id: roleId,
       user_id: user?.id || null,
       session_id: sessionId,
       viewer_badges: user ? null : [],
-    }).then(() => {}).catch(() => {});
+    }).then(() => undefined, () => undefined);
   }, [roleId, user, canFire, markFired]);
 
   const ref = useCallback((node: HTMLElement | null) => {

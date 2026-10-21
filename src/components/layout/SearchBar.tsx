@@ -12,6 +12,13 @@ type ResultRow =
   | { kind: "hashtag"; id: string; title: string; subtitle: string; href: string }
   | { kind: "post"; id: string; title: string; subtitle: string; href: string };
 
+type StartupRelation = { name: string; slug: string };
+type ThemedAccountRelation = { handle: string; display_name: string };
+
+function getRelation<T extends object>(value: T | T[] | null): T | null {
+  return Array.isArray(value) ? value[0] ?? null : value;
+}
+
 function useUnifiedSearch(query: string) {
   return useQuery({
     queryKey: ["unified-search", query],
@@ -87,20 +94,22 @@ function useUnifiedSearch(query: string) {
         });
       }
       for (const p of startupPosts.data || []) {
+        const startup = getRelation(p.startups as StartupRelation | StartupRelation[] | null);
         out.push({
           kind: "post",
           id: `startup_${p.id}`,
           title: (p.content || "").slice(0, 64),
-          subtitle: `Startup · ${(p as any).startups?.name || "Startup"}`,
+          subtitle: `Startup · ${startup?.name || "Startup"}`,
           href: `/post/startup_${p.id}`,
         });
       }
       for (const p of themedPosts.data || []) {
+        const account = getRelation(p.themed_accounts as ThemedAccountRelation | ThemedAccountRelation[] | null);
         out.push({
           kind: "post",
           id: `themed_${p.id}`,
           title: (p.content || "").slice(0, 64),
-          subtitle: `Creator · @${(p as any).themed_accounts?.handle || "creator"}`,
+          subtitle: `Creator · @${account?.handle || "creator"}`,
           href: `/post/themed_${p.id}`,
         });
       }

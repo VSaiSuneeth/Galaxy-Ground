@@ -13,7 +13,7 @@ describe("normalizeFeedPost", () => {
       reaction_type: "rocket",
       likes_count: "5",
       comments_count: "2",
-    } as any);
+    });
 
     expect(result.user_has_liked).toBe(true);
     expect(result.user_has_bookmarked).toBe(true);

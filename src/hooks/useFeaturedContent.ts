@@ -16,6 +16,12 @@ export interface FeaturedContent {
   updated_at?: string | null;
 }
 
+const FEATURED_CONTENT_TYPES = ["article", "video", "event", "achievement", "spotlight"] as const;
+
+function normalizeContentType(value: string): FeaturedContent["content_type"] {
+  return FEATURED_CONTENT_TYPES.find((type) => type === value) ?? "article";
+}
+
 export function useFeaturedContent() {
   return useQuery({
     queryKey: ["featured-content"],
@@ -28,7 +34,18 @@ export function useFeaturedContent() {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data ?? []).map((item) => ({
+        id: item.id,
+        title: item.headline,
+        description: item.summary,
+        image_url: item.thumbnail_url,
+        content_type: normalizeContentType(item.content_type),
+        url: item.link_url,
+        start_date: item.valid_from,
+        end_date: item.valid_until,
+        is_active: item.is_active ?? false,
+        created_at: item.created_at ?? new Date(0).toISOString(),
+      }));
     },
   });
 }

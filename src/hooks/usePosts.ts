@@ -273,6 +273,11 @@ const getHashtagFeed = async (filter: Filter, page: number, userId?: string): Pr
   return normalizeFeedPosts(hydrated);
 };
 
+type InfiniteFilter = Filter & { infinite: true };
+type SingleFilter = Filter & { infinite?: false | undefined };
+
+export function usePosts(filter: InfiniteFilter): ReturnType<typeof useInfinitePostsQuery>;
+export function usePosts(filter?: SingleFilter): ReturnType<typeof useSinglePostsQuery>;
 export function usePosts(filter: Filter = {}) {
   const isInfinite = !!filter.infinite;
   const singleKey = ["posts", "single", filter];

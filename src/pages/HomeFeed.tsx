@@ -26,7 +26,7 @@ const HomeFeed = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = usePosts({ includeAggregated: true, mode, infinite: true, pageSize: 15 });
+  } = usePosts({ includeAggregated: true, mode: mode === "intel" ? "for-you" : mode, infinite: true, pageSize: 15 });
   const qc = useQueryClient();
   const refresh = () => qc.invalidateQueries({ queryKey: ["posts"] });
   const postList = asArray(posts);

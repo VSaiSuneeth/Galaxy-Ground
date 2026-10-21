@@ -143,7 +143,7 @@ const ContentQualityPanel = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {posts?.map((post: any) => (
+            {posts?.map((post) => (
               <div key={post.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -196,7 +196,7 @@ const EdgeFunctionHealthPanel = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {syncJobs?.map((job: any) => (
+            {syncJobs?.map((job) => (
               <div key={job.id} className="p-3 rounded-lg bg-muted/30 border flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">{job.job_name}</p>
@@ -253,7 +253,7 @@ const LiveEventsPanel = () => {
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" /> Add Event
             </Button>
-            {events?.map((event: any) => (
+            {events?.map((event) => (
               <div key={event.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
@@ -319,7 +319,7 @@ const SpotlightPanel = () => {
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" /> Add Spotlight
             </Button>
-            {featured?.map((item: any) => (
+            {featured?.map((item) => (
               <div key={item.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
@@ -384,7 +384,7 @@ const OpenRolesPanel = () => {
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" /> Add Role
             </Button>
-            {roles?.map((role: any) => (
+            {roles?.map((role) => (
               <div key={role.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
@@ -446,7 +446,7 @@ const VendorsPanel = () => {
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" /> Add Vendor
             </Button>
-            {vendors?.map((vendor: any) => (
+            {vendors?.map((vendor) => (
               <div key={vendor.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
@@ -513,7 +513,7 @@ const BadgeAwardsPanel = () => {
             <Button size="sm" className="gap-2">
               <Plus className="h-4 w-4" /> Award Badge
             </Button>
-            {awards?.map((award: any) => (
+            {awards?.map((award) => (
               <div key={award.id} className="p-3 rounded-lg bg-muted/30 border">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">

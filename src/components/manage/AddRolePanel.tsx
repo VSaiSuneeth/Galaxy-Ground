@@ -116,7 +116,7 @@ export const AddRolePanel = ({ open, onClose, startupId, editingRole, onSaved }:
       expires_at: expiresAt || null,
     };
 
-    let error: any = null;
+    let error: { message: string } | null = null;
     if (isEditing) {
       ({ error } = await supabase.from("startup_roles").update(payload).eq("id", editingRole!.id));
     } else {

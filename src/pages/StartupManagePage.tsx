@@ -8,11 +8,19 @@ import { toast } from "sonner";
 import { RolesTab } from "@/components/manage/RolesTab";
 import { AnalyticsTab } from "@/components/manage/AnalyticsTab";
 
+interface ManagedStartup {
+  id: string;
+  slug: string;
+  name: string;
+  logo_url: string | null;
+  claimed_by_user_id: string | null;
+}
+
 const StartupManagePage = () => {
   const { slug = "" } = useParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const [startup, setStartup] = useState<any>(null);
+  const [startup, setStartup] = useState<ManagedStartup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("roles");

@@ -67,7 +67,7 @@ export function useConnectionRequests() {
         .from("connection_requests")
         .select(`
           *,
-          sender_profile:profiles!connection_requests_sender_id_fkey(username, display_name, avatar_url)
+          sender_profile:profiles!connection_requests_requester_id_fkey(username, display_name, avatar_url)
         `)
         .eq("recipient_id", user!.id)
         .eq("status", "pending")
@@ -122,7 +122,7 @@ export function useActiveThreads() {
 
       if (error) throw error;
 
-      return (data || []).map((thread: any) => {
+      return (data || []).map((thread) => {
         const otherProfile = thread.participant_a === user!.id ? thread.profile_b : thread.profile_a;
         return {
           id: thread.id,

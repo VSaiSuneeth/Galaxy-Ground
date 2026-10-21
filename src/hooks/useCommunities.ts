@@ -148,53 +148,41 @@ export function useCommunityContent(slug: string) {
       const startupIds = matchingStartups.map((s) => s.id);
 
       const [themedPostsRes, startupPostsRes] = await Promise.all([
-        accountIds.length
-          ? supabase
-              .from("themed_posts")
-              .select(
-                "id, account_id, title, content, summary, image_url, hashtags, source_url, published_at, themed_accounts(handle, display_name, avatar_url)"
-              )
-              .in("account_id", accountIds)
-              .order("published_at", { ascending: false })
-              .limit(60)
-          : Promise.resolve({ data: [] as any[] }),
-        startupIds.length
-          ? supabase
-              .from("startup_posts")
-              .select(
-                "id, startup_id, title, content, summary, image_url, hashtags, source_url, published_at, startups(slug, name, logo_url)"
-              )
-              .in("startup_id", startupIds)
-              .order("published_at", { ascending: false })
-              .limit(40)
-          : Promise.resolve({ data: [] as any[] }),
+        supabase
+          .from("themed_posts")
+          .select(
+            "id, account_id, title, content, summary, image_url, hashtags, source_url, published_at, themed_accounts(handle, display_name, avatar_url)"
+          )
+          .in("account_id", accountIds)
+          .order("published_at", { ascending: false })
+          .limit(60),
+        supabase
+          .from("startup_posts")
+          .select(
+            "id, startup_id, title, content, summary, image_url, hashtags, source_url, published_at, startups(slug, name, logo_url)"
+          )
+          .in("startup_id", startupIds)
+          .order("published_at", { ascending: false })
+          .limit(40),
       ]);
 
       // counts
-      const tIds = (themedPostsRes.data || []).map((p: any) => p.id);
-      const sIds = (startupPostsRes.data || []).map((p: any) => p.id);
+      const tIds = (themedPostsRes.data || []).map((post) => post.id);
+      const sIds = (startupPostsRes.data || []).map((post) => post.id);
       const [rxT, rxS, cmT, cmS] = await Promise.all([
-        tIds.length
-          ? supabase.from("aggregate_reactions").select("target_id").eq("target_type", "themed").in("target_id", tIds)
-          : Promise.resolve({ data: [] as any[] }),
-        sIds.length
-          ? supabase.from("aggregate_reactions").select("target_id").eq("target_type", "startup").in("target_id", sIds)
-          : Promise.resolve({ data: [] as any[] }),
-        tIds.length
-          ? supabase.from("aggregate_comments").select("target_id").eq("target_type", "themed").in("target_id", tIds)
-          : Promise.resolve({ data: [] as any[] }),
-        sIds.length
-          ? supabase.from("aggregate_comments").select("target_id").eq("target_type", "startup").in("target_id", sIds)
-          : Promise.resolve({ data: [] as any[] }),
+        supabase.from("aggregate_reactions").select("target_id").eq("target_type", "themed").in("target_id", tIds),
+        supabase.from("aggregate_reactions").select("target_id").eq("target_type", "startup").in("target_id", sIds),
+        supabase.from("aggregate_comments").select("target_id").eq("target_type", "themed").in("target_id", tIds),
+        supabase.from("aggregate_comments").select("target_id").eq("target_type", "startup").in("target_id", sIds),
       ]);
-      const tally = (rows: any) => {
+      const tally = (rows: { target_id: string }[] | null) => {
         const m = new Map<string, number>();
-        for (const r of rows.data || []) m.set(r.target_id, (m.get(r.target_id) || 0) + 1);
+        for (const row of rows ?? []) m.set(row.target_id, (m.get(row.target_id) || 0) + 1);
         return m;
       };
-      const lT = tally(rxT), lS = tally(rxS), cT = tally(cmT), cS = tally(cmS);
+      const lT = tally(rxT.data), lS = tally(rxS.data), cT = tally(cmT.data), cS = tally(cmS.data);
 
-      const themedFeed: CommunityFeedItem[] = (themedPostsRes.data || []).map((p: any) => ({
+      const themedFeed: CommunityFeedItem[] = (themedPostsRes.data || []).map((p) => ({
         source: "themed",
         id: p.id,
         account_id: p.account_id,
@@ -212,7 +200,7 @@ export function useCommunityContent(slug: string) {
         comments_count: cT.get(p.id) || 0,
       }));
 
-      const startupFeed: CommunityFeedItem[] = (startupPostsRes.data || []).map((p: any) => ({
+      const startupFeed: CommunityFeedItem[] = (startupPostsRes.data || []).map((p) => ({
         source: "startup",
         id: p.id,
         account_id: p.startup_id,

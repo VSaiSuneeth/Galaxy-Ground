@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRightOutside, Building2, Calendar, Globe, Loader2, MapPin, Briefcase } from "lucide-react";
+import { ArrowLeft, Building2, Calendar, Globe, Loader2, MapPin, Briefcase } from "lucide-react";
 import { useStartup, useStartupPosts } from "@/hooks/useStartups";
 import { useFollow } from "@/hooks/useFollow";
 import { useStartupRoles } from "@/hooks/useStartupRoles";

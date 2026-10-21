@@ -21,6 +21,10 @@ const INTENT_CATEGORIES = [
   { value: "Other", label: "Other" },
 ];
 
+function isMessagingOpenTo(value: string | null): value is "everyone" | "followers" | "nobody" {
+  return value === "everyone" || value === "followers" || value === "nobody";
+}
+
 export default function MessagingSettingsPage() {
   const { user, loading: authLoading } = useAuth();
   const { data: profile } = useOwnProfile(user);
@@ -35,13 +39,13 @@ export default function MessagingSettingsPage() {
 
   useEffect(() => {
     if (settings) {
-      setOpenTo((settings.messaging_open_to as any) || "everyone");
+      setOpenTo(isMessagingOpenTo(settings.messaging_open_to) ? settings.messaging_open_to : "everyone");
       setCategories(settings.messaging_allowed_categories || []);
       setShowOnline(settings.show_online_status !== false);
       setRequireCompleteness(!!settings.require_complete_profile_to_message);
     }
     if (profile) {
-      setWeeklyDigest((profile as any).weekly_digest_opt_in === true);
+      setWeeklyDigest(profile.weekly_digest_opt_in);
     }
   }, [settings, profile]);
 
@@ -53,7 +57,7 @@ export default function MessagingSettingsPage() {
     return <Navigate to="/auth" replace />;
   }
 
-  const isVerified = profile?.badges?.some(
+  const isVerified = profile?.badges.some(
     (b: string) => b === "Space Pioneer" || b === "Startup Founder" || b === "Mission Contributor"
   ) || false;
 
@@ -75,12 +79,12 @@ export default function MessagingSettingsPage() {
       });
       const { error: digestError } = await supabase
         .from("profiles")
-        .update({ weekly_digest_opt_in: weeklyDigest } as any)
+        .update({ weekly_digest_opt_in: weeklyDigest })
         .eq("user_id", user!.id);
       if (digestError) throw digestError;
       toast.success("Messaging privacy settings saved.");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save settings.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to save settings.");
     }
   };
 

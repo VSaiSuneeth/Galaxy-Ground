@@ -40,7 +40,7 @@ function getOnboardingStorageKey(userId?: string | null) {
   return userId ? `${STORAGE_PREFIX}:${userId}` : `${STORAGE_PREFIX}:guest`;
 }
 
-export function writeOnboardingStatus(userId?: string | null, completed: boolean) {
+export function writeOnboardingStatus(userId: string | null | undefined, completed = false) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(getOnboardingStorageKey(userId), completed ? "complete" : "pending");
 }

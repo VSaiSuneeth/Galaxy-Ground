@@ -5,6 +5,16 @@ import { Key, Copy, Check, AlertTriangle, ExternalLink, Loader2, Trash2 } from "
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import type { Database } from "@/integrations/supabase/types";
+
+type ApiKey = Database["public"]["Tables"]["api_keys"]["Row"];
+
+function isKeyResponse(value: unknown): value is { key: string; error?: string } {
+  return value !== null
+    && typeof value === "object"
+    && "key" in value
+    && typeof value.key === "string";
+}
 
 const API_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-api-key`
@@ -12,7 +22,7 @@ const API_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL
 
 export const DeveloperAccess = () => {
   const { user } = useAuth();
-  const [apiKey, setApiKey] = useState<any>(null);
+  const [apiKey, setApiKey] = useState<ApiKey | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [plaintextKey, setPlaintextKey] = useState("");
@@ -57,14 +67,21 @@ export const DeveloperAccess = () => {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       });
-      const json = await res.json();
-      if (!res.ok) { toast.error(json.error || "Failed to generate key"); return; }
+      const json: unknown = await res.json();
+      if (!res.ok) {
+        toast.error(isKeyResponse(json) && json.error ? json.error : "Failed to generate key");
+        return;
+      }
+      if (!isKeyResponse(json)) {
+        toast.error("The API key service returned an invalid response.");
+        return;
+      }
       setPlaintextKey(json.key);
       setShowKeyModal(true);
       loadKey();
       toast.success("API key generated!");
-    } catch (e: any) {
-      toast.error(e.message || "Failed to generate key");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to generate key");
     } finally {
       setGenerating(false);
     }

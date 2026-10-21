@@ -38,9 +38,16 @@ export const AnalyticsTab = ({ startupId }: Props) => {
         .select("id, title, posted_at, is_active")
         .eq("startup_id", startupId)
         .order("posted_at", { ascending: false });
-      const ids = (roles || []).map((r: any) => r.id);
+      const ids = (roles ?? []).map((role) => role.id);
       setRoleIds(ids);
-      setRoleStats((roles || []).map((r: any) => ({ ...r, views_7d: 0, views_30d: 0 })));
+      setRoleStats((roles ?? []).map((role) => ({
+        id: role.id,
+        title: role.title,
+        posted_at: role.posted_at ?? "",
+        is_active: role.is_active ?? false,
+        views_7d: 0,
+        views_30d: 0,
+      })));
 
       if (ids.length === 0) {
         setLoading(false);
@@ -56,7 +63,7 @@ export const AnalyticsTab = ({ startupId }: Props) => {
         .from("role_views")
         .select("id", { count: "exact", head: true })
         .in("role_id", ids)
-        .gte("viewed_at", thirtyDaysAgo);
+        .gte("created_at", thirtyDaysAgo);
       setTotalViews30d(total30 || 0);
 
       // Unique viewers (distinct session_id) in last 30 days
@@ -64,8 +71,8 @@ export const AnalyticsTab = ({ startupId }: Props) => {
         .from("role_views")
         .select("session_id")
         .in("role_id", ids)
-        .gte("viewed_at", thirtyDaysAgo);
-      const uniqueSessions = new Set((unique || []).map((r: any) => r.session_id));
+        .gte("created_at", thirtyDaysAgo);
+      const uniqueSessions = new Set((unique ?? []).flatMap((view) => view.session_id ? [view.session_id] : []));
       setUniqueViewers(uniqueSessions.size);
 
       // Per-role stats
@@ -75,18 +82,18 @@ export const AnalyticsTab = ({ startupId }: Props) => {
           .from("role_views")
           .select("id", { count: "exact", head: true })
           .eq("role_id", id)
-          .gte("viewed_at", sevenDaysAgo);
+          .gte("created_at", sevenDaysAgo);
         const { count: v30 } = await supabase
           .from("role_views")
           .select("id", { count: "exact", head: true })
           .eq("role_id", id)
-          .gte("viewed_at", thirtyDaysAgo);
-        const role = (roles || []).find((r: any) => r.id === id);
+          .gte("created_at", thirtyDaysAgo);
+        const role = (roles ?? []).find((item) => item.id === id);
         stats.push({
           id,
           title: role?.title || "Unknown",
           posted_at: role?.posted_at || "",
-          is_active: role?.is_active ?? true,
+          is_active: role?.is_active ?? false,
           views_7d: v7 || 0,
           views_30d: v30 || 0,
         });
@@ -98,11 +105,11 @@ export const AnalyticsTab = ({ startupId }: Props) => {
         .from("role_views")
         .select("viewer_badges")
         .in("role_id", ids)
-        .gte("viewed_at", thirtyDaysAgo)
+        .gte("created_at", thirtyDaysAgo)
         .not("viewer_badges", "is", null);
       const badgeMap = new Map<string, number>();
       let badgeTotal = 0;
-      for (const row of (badgeData || []) as any[]) {
+      for (const row of badgeData ?? []) {
         if (Array.isArray(row.viewer_badges)) {
           for (const b of row.viewer_badges) {
             badgeMap.set(b, (badgeMap.get(b) || 0) + 1);

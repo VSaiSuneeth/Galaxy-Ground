@@ -83,7 +83,7 @@ export const IntelTabContent = () => {
         <div className="glass-panel p-4">
           <h3 className="text-sm font-semibold text-foreground mb-3">Open Roles</h3>
           <div className="space-y-2">
-            {openRoles.slice(0, 3).map((role: any) => (
+            {openRoles.slice(0, 3).map((role) => (
               <Link
                 key={role.id}
                 to={`/startup/${role.startups?.slug || ""}#open-roles`}

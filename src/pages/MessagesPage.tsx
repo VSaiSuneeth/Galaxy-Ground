@@ -304,8 +304,8 @@ function InboxTabsArea({
       await respond.mutateAsync({ requestId, action });
       toast.success(`Request ${action === "accepted" ? "accepted!" : action === "declined" ? "declined." : "blocked."}`);
       onResponseRefresh();
-    } catch (e: any) {
-      toast.error(e.message || "Failed to process request.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to process request.");
     }
   };
 
@@ -476,8 +476,8 @@ function ChatThreadWindow({
         content: typed.trim(),
       });
       setTyped("");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to send message.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to send message.");
     }
   };
 
@@ -487,8 +487,8 @@ function ChatThreadWindow({
       await blockUser.mutateAsync(thread.other_participant!.user_id);
       toast.success("User blocked.");
       navigate("/messages");
-    } catch (e: any) {
-      toast.error(e.message || "Failed to block user.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Failed to block user.");
     }
   };
 

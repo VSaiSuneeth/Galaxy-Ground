@@ -17,6 +17,10 @@ interface LayoutShiftEntry extends PerformanceEntry {
   value: number;
 }
 
+interface FirstInputEntry extends PerformanceEntry {
+  processingStart: number;
+}
+
 function logMetric(name: MetricName, value: number): void {
   if (!import.meta.env.PROD) return;
 
@@ -65,7 +69,8 @@ export function reportWebVitals(): void {
     // First Input Delay / Interaction to Next Paint
     new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        logMetric("FID", entry.processingStart - entry.startTime);
+        const firstInput = entry as FirstInputEntry;
+        logMetric("FID", firstInput.processingStart - firstInput.startTime);
         break;
       }
     }).observe({ type: "first-input", buffered: true });

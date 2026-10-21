@@ -11,6 +11,8 @@ export type ProfileRow = {
   location: string | null;
   website: string | null;
   interests: string[];
+  badges: string[];
+  weekly_digest_opt_in: boolean;
   created_at: string;
 };
 
@@ -26,6 +28,8 @@ export function normalizeProfile(row: Record<string, unknown>): ProfileRow {
     location: (row.location as string | null) ?? null,
     website: (row.website as string | null) ?? null,
     interests: normalizeInterests(row.interests),
+    badges: normalizeInterests(row.badges),
+    weekly_digest_opt_in: row.weekly_digest_opt_in === true,
     created_at: String(row.created_at ?? new Date().toISOString()),
   };
 }
@@ -34,7 +38,7 @@ export function normalizeProfile(row: Record<string, unknown>): ProfileRow {
 export async function ensureProfile(user: User): Promise<ProfileRow | null> {
   const { data: existing, error: readErr } = await supabase
     .from("profiles")
-    .select("user_id, username, display_name, avatar_url, bio, location, website, interests, created_at")
+    .select("user_id, username, display_name, avatar_url, bio, location, website, interests, badges, weekly_digest_opt_in, created_at")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -49,14 +53,14 @@ export async function ensureProfile(user: User): Promise<ProfileRow | null> {
   const { data: inserted, error: insertErr } = await supabase
     .from("profiles")
     .insert({ user_id: user.id, username, display_name })
-    .select("user_id, username, display_name, avatar_url, bio, location, website, interests, created_at")
+    .select("user_id, username, display_name, avatar_url, bio, location, website, interests, badges, weekly_digest_opt_in, created_at")
     .single();
 
   if (insertErr) {
     // Race: trigger created row between read and insert
     const { data: retry } = await supabase
       .from("profiles")
-      .select("user_id, username, display_name, avatar_url, bio, location, website, interests, created_at")
+      .select("user_id, username, display_name, avatar_url, bio, location, website, interests, badges, weekly_digest_opt_in, created_at")
       .eq("user_id", user.id)
       .maybeSingle();
     if (retry) return normalizeProfile(retry as Record<string, unknown>);
